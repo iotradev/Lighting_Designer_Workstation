@@ -1,16 +1,16 @@
 {
   "recent_tools": [
+    "sACNMonitor",
+    "FixtureLibrary",
     "BPMAnalyzer",
     "CueDesigner",
     "VisualSimulator",
     "MIDIMonitor",
-    "sACNMonitor",
     "MoodAnalyzer",
     "BeamCalculator",
     "ArtNetMonitor",
-    "DMXTester",
-    "BeatDetector"
+    "DMXTester"
   ],
   "favorites": [],
-  "window_geometry": "01d9d0cb000300000000044e00000147000008cb000004520000044e00000147000008cb0000045200000000000000000a000000044e00000147000008cb00000452"
+  "window_geometry": "01d9d0cb00030000000001180000019f00000595000004aa000001180000019f00000595000004aa00000000000000000a00000001180000019f00000595000004aa"
 }

@@ -190,85 +190,67 @@ class BaseToolWindow(QMainWindow):
 
         # 启用自动保存
 
-        file_menu = menubar.addMenu("(&F)")
+        file_menu = menubar.addMenu("文件(&F)")
 
-        self._add_action(file_menu, "New (&N)", self._on_new_project, QKeySequence.StandardKey.New, tooltip="Create a new project")
+        self._add_action(file_menu, "新建(&N)", self._on_new_project, QKeySequence.StandardKey.New, tooltip="新建项目")
 
-        self._add_action(file_menu, "Open (&O)...", self._on_open_project, QKeySequence.StandardKey.Open, tooltip="Open an existing project")
-
-        file_menu.addSeparator()
-
-        self._add_action(file_menu, "Save (&S)", self._on_save_project, QKeySequence.StandardKey.Save, tooltip="Save the current project")
-
-        self._add_action(file_menu, "Save As (&A)...", self._on_save_as, QKeySequence("Ctrl+Shift+S"), tooltip="Save project to a new location")
+        self._add_action(file_menu, "打开(&O)...", self._on_open_project, QKeySequence.StandardKey.Open, tooltip="打开已有项目")
 
         file_menu.addSeparator()
 
+        self._add_action(file_menu, "保存(&S)", self._on_save_project, QKeySequence.StandardKey.Save, tooltip="保存当前项目")
 
+        self._add_action(file_menu, "另存为(&A)...", self._on_save_as, QKeySequence("Ctrl+Shift+S"), tooltip="另存为新文件")
 
-        # 定期保存窗口布局
+        file_menu.addSeparator()
 
-        self.recent_menu = file_menu.addMenu("Recent Projects (&R)")
+        self.recent_menu = file_menu.addMenu("最近项目(&R)")
 
         self._update_recent_menu()
 
-
-
         file_menu.addSeparator()
 
-        self._add_action(file_menu, "Quit (&Q)", self.close, QKeySequence("Alt+F4"), tooltip="Quit the application")
+        self._add_action(file_menu, "退出(&Q)", self.close, QKeySequence("Alt+F4"), tooltip="退出程序")
 
 
 
-        # 文件菜单
+        edit_menu = menubar.addMenu("编辑(&E)")
 
-        edit_menu = menubar.addMenu("(&E)")
+        self._add_action(edit_menu, "撤销", self._stub("Undo"), QKeySequence.StandardKey.Undo, tooltip="撤销", enabled=False)
 
-        self._add_action(edit_menu, "Undo", self._stub("Undo"), QKeySequence.StandardKey.Undo, tooltip="Undo", enabled=False)
-
-        self._add_action(edit_menu, "Redo", self._stub("Redo"), QKeySequence.StandardKey.Redo, tooltip="Redo", enabled=False)
+        self._add_action(edit_menu, "重做", self._stub("Redo"), QKeySequence.StandardKey.Redo, tooltip="重做", enabled=False)
 
         edit_menu.addSeparator()
 
-        self._add_action(edit_menu, "Cut", self._stub("Cut"), QKeySequence.StandardKey.Cut, tooltip="Cut", enabled=False)
+        self._add_action(edit_menu, "剪切", self._stub("Cut"), QKeySequence.StandardKey.Cut, tooltip="剪切", enabled=False)
 
-        self._add_action(edit_menu, "Copy", self._stub("Copy"), QKeySequence.StandardKey.Copy, tooltip="Copy", enabled=False)
+        self._add_action(edit_menu, "复制", self._stub("Copy"), QKeySequence.StandardKey.Copy, tooltip="复制", enabled=False)
 
-        self._add_action(edit_menu, "Paste", self._stub("Paste"), QKeySequence.StandardKey.Paste, tooltip="Paste", enabled=False)
+        self._add_action(edit_menu, "粘贴", self._stub("Paste"), QKeySequence.StandardKey.Paste, tooltip="粘贴", enabled=False)
 
 
 
-        # 最近项目子菜单
+        view_menu = menubar.addMenu("视图(&V)")
 
-        view_menu = menubar.addMenu("(&V)")
+        self._add_action(view_menu, "切换日志面板", self._toggle_log_panel, QKeySequence("Ctrl+L"), tooltip="显示/隐藏日志面板")
 
-        self._add_action(view_menu, "Toggle Log Panel", self._toggle_log_panel, QKeySequence("Ctrl+L"), tooltip="Show or hide the log panel")
-
-        self._add_action(view_menu, "Toggle Project Panel", self._toggle_project_panel, QKeySequence("Ctrl+P"), tooltip="Show or hide the project panel")
+        self._add_action(view_menu, "切换项目面板", self._toggle_project_panel, QKeySequence("Ctrl+P"), tooltip="显示/隐藏项目面板")
 
         view_menu.addSeparator()
 
-        self._add_action(view_menu, "Dark Theme", lambda: self._switch_theme("dark"), tooltip="Switch to dark theme")
+        self._add_action(view_menu, "深色主题", lambda: self._switch_theme("dark"), tooltip="切换到深色主题")
 
-        self._add_action(view_menu, "Light Theme", lambda: self._switch_theme("light"), tooltip="Switch to light theme")
-
-
-
-        # 编辑菜单
-
-        self.tool_menu = menubar.addMenu("(&T)")
-
-        # 
+        self._add_action(view_menu, "浅色主题", lambda: self._switch_theme("light"), tooltip="切换到浅色主题")
 
 
 
-        # 
+        self.tool_menu = menubar.addMenu("工具(&T)")
 
-        help_menu = menubar.addMenu("(&H)")
+        help_menu = menubar.addMenu("帮助(&H)")
 
-        self._add_action(help_menu, "About", self._show_about, tooltip="About this application")
+        self._add_action(help_menu, "关于", self._show_about, tooltip="关于本程序")
 
-        self._add_action(help_menu, "Keyboard Shortcuts", self._show_shortcuts, tooltip="Show keyboard shortcuts")
+        self._add_action(help_menu, "快捷键", self._show_shortcuts, tooltip="查看快捷键列表")
 
 
 
@@ -324,13 +306,13 @@ class BaseToolWindow(QMainWindow):
 
         # 
 
-        self.status_project = QLabel("Project: ")
+        self.status_project = QLabel("项目: ")
 
         self.statusbar.addWidget(self.status_project, 1)
 
 
 
-        self.status_ready = QLabel("Ready")
+        self.status_ready = QLabel("就绪")
         self.statusbar.addPermanentWidget(self.status_ready)
 
 
@@ -467,9 +449,9 @@ class BaseToolWindow(QMainWindow):
 
             self.project_mgr.save_project()
 
-            self.status_ready.setText("Saved")
+            self.status_ready.setText("已保存")
 
-            QTimer.singleShot(3000, lambda: self.status_ready.setText("Ready"))
+            QTimer.singleShot(3000, lambda: self.status_ready.setText("就绪"))
 
         else:
 
@@ -553,7 +535,7 @@ class BaseToolWindow(QMainWindow):
 
         """"""
 
-        self.status_project.setText(f"Project: {name}")
+        self.status_project.setText(f"项目: {name}")
 
 
 
