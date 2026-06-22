@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-通用专业组件库
-包含: LED表、DMX滑条、通道网格、颜色色块、搜索框等
+
+: LEDDMX
 """
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
@@ -13,7 +13,7 @@ from PySide6.QtGui import QPainter, QColor, QFont, QPen, QLinearGradient
 
 
 class LEDMeter(QWidget):
-    """LED电平表（类似VU表）"""
+    """LEDVU"""
     def __init__(self, channels=1, parent=None):
         super().__init__(parent)
         self.channels = channels
@@ -35,12 +35,12 @@ class LEDMeter(QWidget):
             x = 8 + i * (bar_w + 2)
             bar_h = int(val * (h - 10))
 
-            # 背景
+            # 
             painter.setPen(QColor("#3f3f46"))
             painter.setBrush(QColor("#252526"))
             painter.drawRect(x, 5, bar_w, h - 10)
 
-            # 值 (绿-黄-红渐变)
+            #  (--)
             if val < 0.6:
                 color = QColor("#4ec9b0")
             elif val < 0.85:
@@ -55,7 +55,7 @@ class LEDMeter(QWidget):
 
 
 class DMXBar(QWidget):
-    """DMX通道值滑条 (0-255)"""
+    """DMX (0-255)"""
     value_changed = Signal(int, int)  # channel, value
 
     def __init__(self, channel=1, value=0, parent=None):
@@ -70,25 +70,25 @@ class DMXBar(QWidget):
         w = self.width()
         h = self.height()
 
-        # 通道号
+        # 
         painter.setPen(QColor("#e8912d"))
         painter.setFont(QFont("Consolas", 10, QFont.Weight.Bold))
         painter.drawText(2, 0, 30, h, Qt.AlignmentFlag.AlignVCenter, f"{self.channel:03d}")
 
-        # 背景条
+        # 
         bar_x = 36
         bar_w = w - 80
         painter.setPen(QColor("#3f3f46"))
         painter.setBrush(QColor("#252526"))
         painter.drawRect(bar_x, 6, bar_w, h - 12)
 
-        # 值条
+        # 
         fill_w = int(self._value / 255 * bar_w)
         painter.setBrush(QColor("#e8912d"))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawRect(bar_x, 6, fill_w, h - 12)
 
-        # 数值
+        # 
         painter.setPen(QColor("#cccccc"))
         painter.drawText(w - 40, 0, 38, h,
                         Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
@@ -117,7 +117,7 @@ class DMXBar(QWidget):
 
 
 class ChannelGrid(QWidget):
-    """DMX通道网格 (16通道/行)"""
+    """DMX (16/)"""
     channel_changed = Signal(int, int)  # channel, value
 
     def __init__(self, channels=512, parent=None):
@@ -142,7 +142,7 @@ class ChannelGrid(QWidget):
             layout.addWidget(btn, row, col)
 
     def _on_click(self, ch):
-        # 循环: 0 -> 128 -> 255 -> 0
+        # : 0 -> 128 -> 255 -> 0
         v = self.values[ch]
         if v == 0:
             v = 128
@@ -182,8 +182,8 @@ class ChannelGrid(QWidget):
 
 
 class ColorSwatch(QWidget):
-    """颜色色块显示"""
-    clicked = Signal(str)  # 发射颜色hex
+    """"""
+    clicked = Signal(str)  # hex
 
     def __init__(self, color="#e8912d", size=40, parent=None):
         super().__init__(parent)
@@ -208,8 +208,8 @@ class ColorSwatch(QWidget):
 
 
 class SearchBox(QLineEdit):
-    """搜索框组件"""
-    def __init__(self, placeholder="搜索...", parent=None):
+    """"""
+    def __init__(self, placeholder="...", parent=None):
         super().__init__(parent)
         self.setPlaceholderText(placeholder)
         self.setClearButtonEnabled(True)
@@ -228,7 +228,7 @@ class SearchBox(QLineEdit):
 
 
 class PropertyPanel(QWidget):
-    """属性面板（可折叠分组）"""
+    """"""
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
@@ -237,7 +237,7 @@ class PropertyPanel(QWidget):
         self.layout.addStretch()
 
     def add_group(self, title, widgets=None):
-        """添加属性分组"""
+        """"""
         group = QGroupBox(title)
         group_layout = QVBoxLayout(group)
         group_layout.setSpacing(6)
@@ -249,7 +249,7 @@ class PropertyPanel(QWidget):
 
 
 class ValueSlider(QWidget):
-    """带数值显示的滑条"""
+    """"""
     value_changed = Signal(float)
 
     def __init__(self, label="", min_val=0, max_val=100, default=50, suffix="", parent=None):
@@ -288,8 +288,8 @@ class ValueSlider(QWidget):
 
 
 class StatusBar(QLabel):
-    """状态指示器"""
-    def __init__(self, text="就绪", parent=None):
+    """"""
+    def __init__(self, text="", parent=None):
         super().__init__(text, parent)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setFixedHeight(28)
@@ -297,11 +297,11 @@ class StatusBar(QLabel):
 
     def set_status(self, status, text=""):
         colors = {
-            "ready": ("#4ec9b0", "就绪"),
-            "busy": ("#e8912d", "处理中..."),
-            "error": ("#f44747", "错误"),
-            "offline": ("#808080", "离线"),
-            "online": ("#4ec9b0", "在线"),
+            "ready": ("#4ec9b0", ""),
+            "busy": ("#e8912d", "..."),
+            "error": ("#f44747", ""),
+            "offline": ("#808080", ""),
+            "online": ("#4ec9b0", ""),
         }
         color, default_text = colors.get(status, ("#808080", status))
         display = text or default_text

@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-"""主题系统 - GrandMA3风格深色/浅色主题"""
+""" - GrandMA3/"""
 import json, os
 from pathlib import Path
 
 THEMES_DIR = Path(__file__).parent.parent.parent / "Config" / "Themes"
 
 def load_theme(name="dark"):
-    """加载主题配置"""
+    """"""
     theme_file = THEMES_DIR / f"{name}.json"
     if theme_file.exists():
         with open(theme_file, "r", encoding="utf-8") as f:
             return json.load(f)
-    # 默认返回深色主题
+    # 
     return _default_dark()
 
 def _default_dark():

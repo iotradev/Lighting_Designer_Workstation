@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
-"""UI组件"""
+"""UI"""
 from .base_window import BaseToolWindow

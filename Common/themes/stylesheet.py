@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""从主题配置生成PySide6 QSS样式表"""
+"""PySide6 QSS"""
 from . import load_theme
 
 def generate_stylesheet(theme_name="dark"):
-    """生成完整的Qt样式表"""
+    """Qt"""
     t = load_theme(theme_name)
     c = t["colors"]
     f = t["fonts"]
@@ -13,7 +13,7 @@ def generate_stylesheet(theme_name="dark"):
     return f"""
 /* ===== Lighting Designer Workstation - {t['name']} ===== */
 
-/* 全局基础 */
+/*  */
 QWidget {{
     background-color: {c['background']};
     color: {c['text']};
@@ -23,7 +23,7 @@ QWidget {{
     selection-color: {c['text_bright']};
 }}
 
-/* 主窗口 */
+/*  */
 QMainWindow {{
     background-color: {c['background']};
 }}
@@ -34,7 +34,7 @@ QMainWindow::separator {{
     height: 2px;
 }}
 
-/* 菜单栏 */
+/*  */
 QMenuBar {{
     background-color: {c['menu_bg']};
     border-bottom: 1px solid {c['border']};
@@ -64,7 +64,7 @@ QMenu::separator {{
     margin: 4px 8px;
 }}
 
-/* 工具栏 */
+/*  */
 QToolBar {{
     background-color: {c['toolbar_bg']};
     border: none;
@@ -86,7 +86,7 @@ QToolButton:pressed {{
     background-color: {c['accent_pressed']};
 }}
 
-/* 状态栏 */
+/*  */
 QStatusBar {{
     background-color: {c['statusbar_bg']};
     color: {c['text_bright']};
@@ -96,7 +96,7 @@ QStatusBar::item {{
     border: none;
 }}
 
-/* 标签页 */
+/*  */
 QTabWidget::pane {{
     border: 1px solid {c['border']};
     background-color: {c['surface']};
@@ -118,7 +118,7 @@ QTabBar::tab:hover {{
     background-color: {c['button_hover']};
 }}
 
-/* 按钮 */
+/*  */
 QPushButton {{
     background-color: {c['button_bg']};
     color: {c['text']};
@@ -147,7 +147,7 @@ QPushButton#accent_btn:hover {{
     background-color: {c['accent_hover']};
 }}
 
-/* 输入框 */
+/*  */
 QLineEdit, QTextEdit, QPlainTextEdit {{
     background-color: {c['input_bg']};
     color: {c['text']};
@@ -159,7 +159,7 @@ QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{
     border-color: {c['accent']};
 }}
 
-/* 下拉框 */
+/*  */
 QComboBox {{
     background-color: {c['input_bg']};
     color: {c['text']};
@@ -181,7 +181,7 @@ QComboBox QAbstractItemView {{
     selection-background-color: {c['accent']};
 }}
 
-/* 数字输入 */
+/*  */
 QSpinBox, QDoubleSpinBox {{
     background-color: {c['input_bg']};
     color: {c['text']};
@@ -190,7 +190,7 @@ QSpinBox, QDoubleSpinBox {{
     padding: 4px;
 }}
 
-/* 列表和树 */
+/*  */
 QListWidget, QTreeWidget, QTableWidget {{
     background-color: {c['tree_bg']};
     color: {c['text']};
@@ -212,7 +212,7 @@ QHeaderView::section {{
     font-weight: bold;
 }}
 
-/* 滚动条 */
+/*  */
 QScrollBar:vertical {{
     background-color: {c['background']};
     width: 12px;
@@ -242,7 +242,7 @@ QScrollBar::handle:horizontal {{
     margin: 2px;
 }}
 
-/* 分组框 */
+/*  */
 QGroupBox {{
     border: 1px solid {c['border']};
     border-radius: {r['md']}px;
@@ -257,7 +257,7 @@ QGroupBox::title {{
     padding: 0 8px;
 }}
 
-/* 进度条 */
+/*  */
 QProgressBar {{
     background-color: {c['surface']};
     border: 1px solid {c['border']};
@@ -270,7 +270,7 @@ QProgressBar::chunk {{
     border-radius: {r['sm']}px;
 }}
 
-/* 滑块 */
+/*  */
 QSlider::groove:horizontal {{
     background-color: {c['surface']};
     height: 6px;
@@ -287,7 +287,7 @@ QSlider::handle:horizontal:hover {{
     background-color: {c['accent_hover']};
 }}
 
-/* 停靠窗口 */
+/*  */
 QDockWidget {{
     color: {c['text']};
     titlebar-close-icon: none;
@@ -299,7 +299,7 @@ QDockWidget::title {{
     font-weight: bold;
 }}
 
-/* 工具提示 */
+/*  */
 QToolTip {{
     background-color: {c['panel']};
     color: {c['text']};
@@ -308,7 +308,7 @@ QToolTip {{
     font-size: {f['size_small']}px;
 }}
 
-/* 分割器 */
+/*  */
 QSplitter::handle {{
     background-color: {c['border']};
 }}
@@ -319,7 +319,7 @@ QSplitter::handle:vertical {{
     height: 3px;
 }}
 
-/* 复选框/单选按钮 */
+/* / */
 QCheckBox::indicator, QRadioButton::indicator {{
     width: 18px;
     height: 18px;
