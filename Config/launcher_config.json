@@ -1,16 +1,16 @@
 {
   "recent_tools": [
+    "EquipmentListGenerator",
+    "CueSheetGenerator",
+    "TimecodeGenerator",
     "AIStageDesigner",
     "AITroubleshooter",
     "AILightingDesigner",
     "AIProgrammingAssistant",
     "RDMTool",
     "DistributionPlanner",
-    "GeneratorCalculator",
-    "StagePlotDesigner",
-    "GoboPreviewer",
-    "MIDIMapper"
+    "GeneratorCalculator"
   ],
   "favorites": [],
-  "window_geometry": "01d9d0cb00030000000001f80000015e0000067500000469000001f80000015e000006750000046900000000000000000a00000001f80000015e0000067500000469"
+  "window_geometry": "01d9d0cb00030000000001ed0000015b0000066a00000466000001ed0000015b0000066a0000046600000000000000000a00000001ed0000015b0000066a00000466"
 }

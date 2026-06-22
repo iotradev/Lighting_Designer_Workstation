@@ -41,7 +41,7 @@ def _default_dark():
             "button_hover": "#3e3e42",
             "menu_bg": "#2d2d30",
             "toolbar_bg": "#333337",
-            "statusbar_bg": "#007acc",
+            "statusbar_bg": "#2d2d30",
             "tab_active": "#1e1e1e",
             "tab_inactive": "#2d2d30",
             "scrollbar": "#424242",
