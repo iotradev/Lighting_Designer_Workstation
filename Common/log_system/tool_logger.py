@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
-统一日志系统
-支持: Info / Warning / Error / Debug 四个级别
-输出: 日志窗口(QTextEdit) + 文件(Logs/)
+缁熶竴鏃ュ織绯荤粺
+鏀寔: Info / Warning / Error / Debug 鍥涗釜绾у埆
+杈撳嚭: 鏃ュ織绐楀彛(QTextEdit) + 鏂囦欢(Logs/)
 """
 import os, sys
 from datetime import datetime
@@ -23,22 +23,20 @@ class LogLevel(IntEnum):
     ERROR = 3
 
 class LogSignal(QObject):
-    """日志信号（跨线程安全）"""
-    message = signal = None  # 占位，实际用 Signal
+    """鏃ュ織淇″彿锛堣法绾跨▼瀹夊叏锛?""
+    message = signal = None  # 鍗犱綅锛屽疄闄呯敤 Signal
 
-# 使用独立的信号对象避免元类冲突
-from PySide6.QtCore import Signal as _Signal
+# 浣跨敤鐙珛鐨勪俊鍙峰璞￠伩鍏嶅厓绫诲啿绐?from PySide6.QtCore import Signal as _Signal
 
 class _LogEmitter(QObject):
     log_message = _Signal(str, str, str)  # level, timestamp, message
 
 class ToolLogger:
     """
-    工具日志器
-    用法:
+    宸ュ叿鏃ュ織鍣?    鐢ㄦ硶:
         logger = ToolLogger("BPMAnalyzer")
-        logger.info("BPM检测完成: 120")
-        logger.error("无法加载文件")
+        logger.info("BPM妫€娴嬪畬鎴? 120")
+        logger.error("鏃犳硶鍔犺浇鏂囦欢")
     """
     _emitter = _LogEmitter()
 
@@ -55,33 +53,31 @@ class ToolLogger:
             self._log_path = LOGS_DIR / f"{tool_name}_{date_str}.log"
 
     def _write(self, level: LogLevel, msg: str):
-        """写入日志"""
+        """鍐欏叆鏃ュ織"""
         if level < self.min_level:
             return
         ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
         level_name = level.name
         line = f"[{ts}] [{level_name}] [{self.tool_name}] {msg}"
 
-        # 输出到控制台
+        # 杈撳嚭鍒版帶鍒跺彴
         if level >= LogLevel.WARNING:
             print(line, file=sys.stderr)
         else:
             print(line)
 
-        # 输出到文件
-        if self.file_logging and self._log_path:
+        # 杈撳嚭鍒版枃浠?        if self.file_logging and self._log_path:
             try:
                 with open(self._log_path, "a", encoding="utf-8") as f:
                     f.write(line + "\n")
             except IOError:
                 pass
 
-        # 输出到日志窗口控件
-        if self.log_widget and isinstance(self.log_widget, QTextEdit):
+        # 杈撳嚭鍒版棩蹇楃獥鍙ｆ帶浠?        if self.log_widget and isinstance(self.log_widget, QTextEdit):
             self._append_to_widget(level, ts, msg)
 
     def _append_to_widget(self, level, ts, msg):
-        """追加文本到日志控件"""
+        """杩藉姞鏂囨湰鍒版棩蹇楁帶浠?""
         fmt = QTextCharFormat()
         color_map = {
             LogLevel.DEBUG: QColor("#808080"),
@@ -98,11 +94,11 @@ class ToolLogger:
         self.log_widget.ensureCursorVisible()
 
     def set_widget(self, widget):
-        """设置日志输出控件"""
+        """璁剧疆鏃ュ織杈撳嚭鎺т欢"""
         self.log_widget = widget
 
     def set_level(self, level):
-        """设置最低日志级别"""
+        """璁剧疆鏈€浣庢棩蹇楃骇鍒?""
         self.min_level = level
 
     def debug(self, msg):
@@ -117,11 +113,16 @@ class ToolLogger:
     def error(self, msg):
         self._write(LogLevel.ERROR, msg)
 
+    def exception(self, msg, exc):
+        """记录带堆栈的错误"""
+        import traceback
+        self._write(LogLevel.ERROR, f"{msg}\n{traceback.format_exc()}")
+
 
 class LogPanel(QWidget):
     """
-    可嵌入的日志面板组件
-    包含: 日志文本区 + 级别筛选 + 清除按钮
+    鍙祵鍏ョ殑鏃ュ織闈㈡澘缁勪欢
+    鍖呭惈: 鏃ュ織鏂囨湰鍖?+ 绾у埆绛涢€?+ 娓呴櫎鎸夐挳
     """
     def __init__(self, tool_name="", parent=None):
         super().__init__(parent)
@@ -133,31 +134,29 @@ class LogPanel(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(4)
 
-        # 工具栏
-        toolbar = QHBoxLayout()
+        # 宸ュ叿鏍?        toolbar = QHBoxLayout()
         toolbar.setSpacing(8)
 
         from PySide6.QtWidgets import QLabel
-        lbl = QLabel("📋 日志")
+        lbl = QLabel("馃搵 鏃ュ織")
         lbl.setStyleSheet("font-weight:bold; color:#e8912d;")
         toolbar.addWidget(lbl)
 
         self.level_combo = QComboBox()
-        self.level_combo.addItems(["全部", "Info", "Warning", "Error", "Debug"])
+        self.level_combo.addItems(["鍏ㄩ儴", "Info", "Warning", "Error", "Debug"])
         self.level_combo.currentTextChanged.connect(self._on_level_changed)
         toolbar.addWidget(self.level_combo)
 
         toolbar.addStretch()
 
-        btn_clear = QPushButton("清除")
+        btn_clear = QPushButton("娓呴櫎")
         btn_clear.setFixedWidth(60)
         btn_clear.clicked.connect(lambda: self.log_text.clear())
         toolbar.addWidget(btn_clear)
 
         layout.addLayout(toolbar)
 
-        # 日志文本区
-        self.log_text = QTextEdit()
+        # 鏃ュ織鏂囨湰鍖?        self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
         self.log_text.setFont(QFont("Cascadia Code, Consolas, monospace", 11))
         self.log_text.setStyleSheet("""
@@ -173,10 +172,11 @@ class LogPanel(QWidget):
         self.logger.set_widget(self.log_text)
 
     def _on_level_changed(self, text):
-        """切换日志级别筛选"""
-        level_map = {"全部": LogLevel.DEBUG, "Debug": LogLevel.DEBUG,
+        """鍒囨崲鏃ュ織绾у埆绛涢€?""
+        level_map = {"鍏ㄩ儴": LogLevel.DEBUG, "Debug": LogLevel.DEBUG,
                      "Info": LogLevel.INFO, "Warning": LogLevel.WARNING, "Error": LogLevel.ERROR}
         self.logger.set_level(level_map.get(text, LogLevel.DEBUG))
 
     def get_logger(self):
         return self.logger
+
