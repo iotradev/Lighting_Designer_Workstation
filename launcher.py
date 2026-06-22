@@ -788,6 +788,11 @@ def main():
     palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#ffffff"))
     app.setPalette(palette)
 
+    # 加载统一 QSS 样式表
+    qss_path = BASE_DIR / "Common" / "themes" / "launcher.qss"
+    if qss_path.exists():
+        app.setStyleSheet(qss_path.read_text(encoding="utf-8"))
+
     # 渚濊禆妫€鏌?
     missing = []
     try:
