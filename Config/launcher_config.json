@@ -1,8 +1,8 @@
 {
   "recent_tools": [
+    "TimecodeGenerator",
     "EquipmentListGenerator",
     "CueSheetGenerator",
-    "TimecodeGenerator",
     "AIStageDesigner",
     "AITroubleshooter",
     "AILightingDesigner",
@@ -12,5 +12,5 @@
     "GeneratorCalculator"
   ],
   "favorites": [],
-  "window_geometry": "01d9d0cb00030000000001ed0000015b0000066a00000466000001ed0000015b0000066a0000046600000000000000000a00000001ed0000015b0000066a00000466"
+  "window_geometry": "01d9d0cb0003000000000246000000e8000006c3000003f300000246000000e8000006c3000003f300000000000000000a0000000246000000e8000006c3000003f3"
 }

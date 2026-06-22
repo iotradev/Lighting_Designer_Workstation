@@ -15,7 +15,7 @@ from ui.base_window import BaseToolWindow
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QComboBox, QSpinBox, QGroupBox, QTableWidget, QTableWidgetItem,
-    QHeaderView, QFileDialog, QFrame, QGridLayout, QMessageBox
+    QHeaderView, QFileDialog, QFrame, QGridLayout, QMessageBox, QCheckBox
 )
 from PySide6.QtCore import Qt, QTimer, Signal, QObject
 from PySide6.QtGui import QFont, QColor
