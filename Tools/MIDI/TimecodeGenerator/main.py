@@ -402,16 +402,38 @@ class TimecodeGenerator(BaseToolWindow):
             self._audio_play_btn.setText("⏸ 暂停音频")
             self._audio_stop_btn.setEnabled(True)
 
+            # 将 samples 转为 generator
+            samples = self._audio_data
+            chunk_size = 4096
+            n_channels = self._audio_channels
+            sr = self._audio_sample_rate
+
+            def audio_generator():
+                """分块输出音频数据的generator"""
+                pos = 0
+                while pos < len(samples):
+                    if not self._audio_playing:
+                        # 输出静音直到停止
+                        yield bytes(chunk_size * 2 * n_channels)
+                        continue
+                    end = min(pos + chunk_size * n_channels, len(samples))
+                    chunk = samples[pos:end]
+                    pos = end
+                    # array.array -> bytes
+                    yield chunk.tobytes()
+                # 播放结束
+                self._audio_playing = False
+
             def play():
                 try:
                     dev = miniaudio.PlaybackDevice(
                         output_format=miniaudio.SampleFormat.SIGNED16,
-                        nchannels=self._audio_channels,
-                        sample_rate=self._audio_sample_rate
+                        nchannels=n_channels,
+                        sample_rate=sr
                     )
-                    dev.start(self._audio_data)
+                    dev.start(audio_generator)
                     self._audio_stream = dev
-                    while self._audio_playing and dev.playing:
+                    while self._audio_playing:
                         time.sleep(0.1)
                     dev.stop()
                     dev.close()
