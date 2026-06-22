@@ -186,7 +186,7 @@ class StageLayoutEngine:
                 for t in target_truss:
                     if placed >= fd["count"]:
                         break
-                    spacing = fd.get("spacing", 30)
+                    spacing = max(1, fd.get("spacing", 30))
                     if t["width"] > t["height"]:  # 水平桁架
                         count_on_truss = min(fd["count"] - placed, max(1, t["width"] // spacing))
                         for i in range(count_on_truss):
