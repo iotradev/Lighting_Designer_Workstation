@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+.eggs/
+dist/
+build/
+*.spec
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Releases
+Releases/
+
+# Logs
+Logs/*.log
+
+# Backups (keep structure, ignore contents)
+Backups/*/
+!Backups/.gitkeep
+
+# Temp
+*.tmp
+*.bak
+Thumbs.db
