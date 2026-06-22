@@ -498,7 +498,7 @@ class BPMAnalyzerWindow(BaseToolWindow):
         
         result = self.engine.compute_bpm_curve(window_sec=5.0, hop_sec=1.0)
         
-        self.bpm_curve_widget.set_data(result['times'], result['bpms'])
+        self.bpm_curve_widget.set_data(result['time_axis'], result['bpm_curve'])
         
         # 更新统计
         stats = self.engine.get_statistics()

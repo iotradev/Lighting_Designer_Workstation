@@ -52,7 +52,8 @@ class BPMEngine:
             self.samples = raw.astype(np.float32)
             self.duration = len(self.samples) / self.sample_rate
             return {'success': True, 'message': '加载成功', 'sample_rate': self.sample_rate,
-                    'duration': self.duration, 'channels': n_ch}
+                    'duration': self.duration, 'channels': n_ch,
+                    'samples_count': len(self.samples)}
         except Exception as e:
             return {'success': False, 'message': f'加载失败: {e}'}
 
@@ -77,7 +78,8 @@ class BPMEngine:
             self.samples = s.astype(np.float32)
             self.duration = len(self.samples) / self.sample_rate
             return {'success': True, 'message': '加载成功', 'sample_rate': self.sample_rate,
-                    'duration': self.duration, 'channels': n_ch}
+                    'duration': self.duration, 'channels': n_ch,
+                    'samples_count': len(self.samples)}
         except Exception as e:
             return {'success': False, 'message': f'WAV加载失败: {e}'}
 
@@ -289,3 +291,16 @@ class BPMEngine:
 
         self.bpm_history = bpms
         return {'bpm_curve': bpms, 'time_axis': times}
+
+    def get_statistics(self) -> dict:
+        """从BPM历史中计算统计数据"""
+        if not self.bpm_history:
+            return {'avg': 0, 'min': 0, 'max': 0, 'std': 0, 'count': 0}
+        arr = np.array(self.bpm_history)
+        return {
+            'avg': round(float(arr.mean()), 1),
+            'min': round(float(arr.min()), 1),
+            'max': round(float(arr.max()), 1),
+            'std': round(float(arr.std()), 1),
+            'count': len(arr)
+        }
