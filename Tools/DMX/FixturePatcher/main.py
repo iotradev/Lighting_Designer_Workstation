@@ -498,7 +498,19 @@ class FixturePatcher(BaseToolWindow):
 
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    window = FixturePatcher()
-    window.show()
-    sys.exit(app.exec())
+    import traceback
+    try:
+
+        app = QApplication(sys.argv)
+        window = FixturePatcher()
+        window.show()
+        sys.exit(app.exec())
+    except Exception as _e:
+        traceback.print_exc()
+        try:
+            from PySide6.QtWidgets import QApplication, QMessageBox
+            _app = QApplication.instance() or QApplication([])
+            QMessageBox.critical(None, "FixturePatcher - 启动错误",
+                f"{type(_e).__name__}: {_e}\n\n请检查日志文件。")
+        except Exception:
+            pass

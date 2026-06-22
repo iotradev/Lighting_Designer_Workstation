@@ -295,9 +295,12 @@ class TitleBar(QFrame):
         if hasattr(self, "_drag_pos") and event.buttons() == Qt.MouseButton.LeftButton:
             self._parent.move(event.globalPosition().toPoint() - self._drag_pos)
 
+    def mouseReleaseEvent(self, event):
+        self._drag_pos = None
+
 
 class ToolButton(QPushButton):
-    """带图标的工具按钮"""
+    """Tool button with hover effect"""
     def __init__(self, name, desc, color, parent=None):
         super().__init__(parent)
         self.accent = color
@@ -306,25 +309,7 @@ class ToolButton(QPushButton):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setFixedHeight(46)
         self.setMinimumWidth(180)
-        self.setStyleSheet(self._style(False))
-
-    def _style(self, hover):
-        if hover:
-            return f"""
-                QPushButton {{
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                        stop:0 {self.accent}22, stop:1 {self.accent}11);
-                    color: {self.accent};
-                    border: 1px solid {self.accent}66;
-                    border-left: 3px solid {self.accent};
-                    border-radius: 4px;
-                    padding: 6px 12px;
-                    font-size: 16px;
-                    font-weight: bold;
-                    text-align: left;
-                }}
-            """
-        return f"""
+        self.setStyleSheet(f"""
             QPushButton {{
                 background: #2a2a2d;
                 color: #ccc;
@@ -338,17 +323,9 @@ class ToolButton(QPushButton):
             QPushButton:hover {{
                 background: #333;
                 color: #fff;
-                border-left: 3px solid {self.accent}88;
+                border-left: 3px solid {color}88;
             }}
-        """
-
-    def enterEvent(self, e):
-        self.setStyleSheet(self._style(True))
-        super().enterEvent(e)
-
-    def leaveEvent(self, e):
-        self.setStyleSheet(self._style(False))
-        super().leaveEvent(e)
+        """)
 
 
 class CategoryCard(QFrame):
@@ -413,7 +390,12 @@ class CategoryCard(QFrame):
                 "下载地址: https://www.python.org/downloads/\n\n"
                 "安装时请勾选 'Add Python to PATH'")
             return
-        subprocess.Popen([PYTHON_EXE, str(script)], cwd=str(script.parent))
+        try:
+            subprocess.Popen([PYTHON_EXE, str(script)], cwd=str(script.parent))
+        except Exception as e:
+            QMessageBox.critical(self, "启动失败",
+                f"无法启动 {exe}:\n{type(e).__name__}: {e}")
+            return
         if self.tool_launched:
             self.tool_launched.emit(folder, exe)
 
@@ -460,6 +442,10 @@ class LauncherWindow(QMainWindow):
         root.setSpacing(0)
 
         self.setWindowTitle(f"Lighting Designer Workstation - v{APP_VERSION}")
+
+        # Custom title bar for frameless window dragging
+        title_bar = TitleBar(self)
+        root.addWidget(title_bar)
 
         content = QHBoxLayout()
         content.setContentsMargins(0, 0, 0, 0)
@@ -599,6 +585,19 @@ class LauncherWindow(QMainWindow):
 
         self._update_recent()
 
+
+    # -- Window dragging support --
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._drag_pos = event.globalPosition().toPoint() - self.pos()
+
+    def mouseMoveEvent(self, event):
+        if hasattr(self, "_drag_pos") and self._drag_pos and event.buttons() == Qt.MouseButton.LeftButton:
+            self.move(event.globalPosition().toPoint() - self._drag_pos)
+
+    def mouseReleaseEvent(self, event):
+        self._drag_pos = None
+
     def _ensure_visible(self):
         from PySide6.QtGui import QGuiApplication
         screen = QGuiApplication.primaryScreen()
@@ -676,7 +675,12 @@ class LauncherWindow(QMainWindow):
                 "下载地址: https://www.python.org/downloads/\n\n"
                 "安装时请勾选 'Add Python to PATH'")
             return
-        subprocess.Popen([PYTHON_EXE, str(script)], cwd=str(script.parent))
+        try:
+            subprocess.Popen([PYTHON_EXE, str(script)], cwd=str(script.parent))
+        except Exception as e:
+            QMessageBox.critical(self, "启动失败",
+                f"无法启动 {exe}:\n{type(e).__name__}: {e}")
+            return
         self._on_tool_launched(folder, exe)
 
     def _on_tool_launched(self, folder, exe):
@@ -730,13 +734,14 @@ class LauncherWindow(QMainWindow):
 
 
 def main():
-    if hasattr(Qt, "AA_EnableHighDpiScaling"):
-        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
-    if hasattr(Qt, "AA_UseHighDpiPixmaps"):
-        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+    import traceback
+    _log_path = BASE_DIR / "Logs" / "launcher_error.log"
+    _log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Qt6 ??????DPI?????????
     try:
         import ctypes
-        ctypes.windll.shcore.SetProcessDpiAwareness(2)
+        ctypes.windll.shcore.SetProcessDpiAwarenessContext(-4)  # PER_MONITOR_AWARE_V2
     except Exception:
         pass
 
@@ -772,10 +777,17 @@ def main():
     if missing:
         QMessageBox.warning(None, "缺少依赖", f"请安装: pip install {' '.join(missing)}")
 
-    window = LauncherWindow()
-    window.show()
-
-    sys.exit(app.exec())
+    try:
+        window = LauncherWindow()
+        window.show()
+        sys.exit(app.exec())
+    except Exception as e:
+        with open(str(_log_path), "w", encoding="utf-8") as f:
+            traceback.print_exc(file=f)
+        print(f"\n\u542f\u52a8\u5668\u5d29\u6e83: {e}")
+        print(f"\u8be6\u7ec6\u65e5\u5fd7: {_log_path}")
+        traceback.print_exc()
+        input("\n\u6309\u56de\u8f66\u9000\u51fa...")
 
 
 if __name__ == "__main__":

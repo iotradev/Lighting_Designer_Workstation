@@ -256,8 +256,20 @@ class CableCalculatorWindow(BaseToolWindow):
 
 
 if __name__ == '__main__':
-    from PySide6.QtWidgets import QApplication
-    app = QApplication(sys.argv)
-    win = CableCalculatorWindow()
-    win.show()
-    sys.exit(app.exec())
+    import traceback
+    try:
+
+        from PySide6.QtWidgets import QApplication
+        app = QApplication(sys.argv)
+        win = CableCalculatorWindow()
+        win.show()
+        sys.exit(app.exec())
+    except Exception as _e:
+        traceback.print_exc()
+        try:
+            from PySide6.QtWidgets import QApplication, QMessageBox
+            _app = QApplication.instance() or QApplication([])
+            QMessageBox.critical(None, "CableCalculator - 启动错误",
+                f"{type(_e).__name__}: {_e}\n\n请检查日志文件。")
+        except Exception:
+            pass

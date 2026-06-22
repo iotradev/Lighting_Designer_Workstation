@@ -1,0 +1,19 @@
+{
+  "name": "test_project",
+  "author": "test_author",
+  "version": "1.0",
+  "created_at": "2026-06-23T02:07:49.324507",
+  "modified_at": "2026-06-23T02:07:49.324507",
+  "description": "",
+  "venue": "",
+  "event_date": "",
+  "fixtures": [],
+  "cues": [],
+  "scenes": [],
+  "groups": [],
+  "presets": [],
+  "patch": [],
+  "notes": [],
+  "settings": {},
+  "tags": []
+}

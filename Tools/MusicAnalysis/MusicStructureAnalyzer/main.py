@@ -242,17 +242,29 @@ class MainWindow(BaseToolWindow):
 
 
 if __name__ == '__main__':
-    import sys
-    from PySide6.QtWidgets import QApplication
-    app = QApplication(sys.argv)
-    app.setStyleSheet("""
+    import traceback
+    try:
+
+        import sys
+        from PySide6.QtWidgets import QApplication
+        app = QApplication(sys.argv)
+        app.setStyleSheet("""
         QMainWindow { background: #1e1e1e; }
         QWidget { background: #1e1e1e; color: #ddd; }
         QPushButton { background: #333; color: #ddd; border: 1px solid #555; border-radius: 4px; padding: 6px 16px; }
         QPushButton:hover { background: #444; }
         QPushButton:disabled { background: #2a2a2a; color: #666; }
         QGroupBox { border: 1px solid #444; border-radius: 4px; margin-top: 10px; padding-top: 15px; }
-    """)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec())
+        """)
+        window = MainWindow()
+        window.show()
+        sys.exit(app.exec())
+    except Exception as _e:
+        traceback.print_exc()
+        try:
+            from PySide6.QtWidgets import QApplication, QMessageBox
+            _app = QApplication.instance() or QApplication([])
+            QMessageBox.critical(None, "MusicStructureAnalyzer - 启动错误",
+                f"{type(_e).__name__}: {_e}\n\n请检查日志文件。")
+        except Exception:
+            pass

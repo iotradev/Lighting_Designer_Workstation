@@ -1,5 +1,16 @@
 {
-  "recent_tools": [],
+  "recent_tools": [
+    "BPMAnalyzer",
+    "CueDesigner",
+    "VisualSimulator",
+    "MIDIMonitor",
+    "sACNMonitor",
+    "MoodAnalyzer",
+    "BeamCalculator",
+    "ArtNetMonitor",
+    "DMXTester",
+    "BeatDetector"
+  ],
   "favorites": [],
-  "window_geometry": "01d9d0cb00030000000002a8000001000000075700000451000002a80000011e000007570000045100000000000000000a00000002a80000011e0000075700000451"
+  "window_geometry": "01d9d0cb000300000000044e00000147000008cb000004520000044e00000147000008cb0000045200000000000000000a000000044e00000147000008cb00000452"
 }

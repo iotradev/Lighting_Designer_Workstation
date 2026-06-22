@@ -24,4 +24,6 @@ if errorlevel 1 (
 )
 
 :: 启动
-python launcher.py
+python launcher.py
+
+pause

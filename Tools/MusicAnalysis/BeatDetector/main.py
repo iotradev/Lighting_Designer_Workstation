@@ -546,4 +546,16 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import traceback
+    try:
+
+        main()
+    except Exception as _e:
+        traceback.print_exc()
+        try:
+            from PySide6.QtWidgets import QApplication, QMessageBox
+            _app = QApplication.instance() or QApplication([])
+            QMessageBox.critical(None, "BeatDetector - 启动错误",
+                f"{type(_e).__name__}: {_e}\n\n请检查日志文件。")
+        except Exception:
+            pass
