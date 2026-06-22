@@ -36,3 +36,7 @@ Backups/*/
 *.tmp
 *.bak
 Thumbs.db
+
+# Installer binaries
+python-installer.exe
+*.exe
