@@ -1,0 +1,3 @@
+# DMX Calculator - 灯光设计工作站
+# 依赖项
+PySide6>=6.5.0

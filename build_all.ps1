@@ -5,7 +5,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$version = (Get-Content -Raw config\version.json | ConvertFrom-Json).version
+$version = (Get-Content -Raw Config\version.json | ConvertFrom-Json).version
 
 Write-Host "[1/4] 检查 Python" -ForegroundColor Cyan
 python --version | Out-Null
@@ -43,3 +43,4 @@ $hash = (Get-FileHash $zipPath -Algorithm SHA256).Hash
 Set-Content -Path Releases\SHA256SUMS.txt -Value "$hash  LightingDesignerWorkstation_v$version.zip"
 
 Write-Host "完成。输出：$zipPath" -ForegroundColor Green
+
