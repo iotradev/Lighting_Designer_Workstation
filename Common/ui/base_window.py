@@ -282,11 +282,11 @@ class BaseToolWindow(QMainWindow):
 
 
 
-        self.toolbar.addAction(" ", self._on_new_project)
+        self.toolbar.addAction("新建", self._on_new_project)
 
-        self.toolbar.addAction(" ", self._on_open_project)
+        self.toolbar.addAction("打开", self._on_open_project)
 
-        self.toolbar.addAction(" ", self._on_save_project)
+        self.toolbar.addAction("保存", self._on_save_project)
 
         self.toolbar.addSeparator()
 

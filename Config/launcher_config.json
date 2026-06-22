@@ -1,16 +1,16 @@
 {
   "recent_tools": [
-    "sACNMonitor",
-    "FixtureLibrary",
-    "BPMAnalyzer",
-    "CueDesigner",
-    "VisualSimulator",
-    "MIDIMonitor",
-    "MoodAnalyzer",
-    "BeamCalculator",
-    "ArtNetMonitor",
-    "DMXTester"
+    "AIStageDesigner",
+    "AITroubleshooter",
+    "AILightingDesigner",
+    "AIProgrammingAssistant",
+    "RDMTool",
+    "DistributionPlanner",
+    "GeneratorCalculator",
+    "StagePlotDesigner",
+    "GoboPreviewer",
+    "MIDIMapper"
   ],
   "favorites": [],
-  "window_geometry": "01d9d0cb00030000000001180000019f00000595000004aa000001180000019f00000595000004aa00000000000000000a00000001180000019f00000595000004aa"
+  "window_geometry": "01d9d0cb00030000000001f80000015e0000067500000469000001f80000015e000006750000046900000000000000000a00000001f80000015e0000067500000469"
 }

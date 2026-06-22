@@ -300,10 +300,10 @@ class BPMAnalyzerWindow(BaseToolWindow):
         
         # 添加工具栏按钮
         self.toolbar.addSeparator()
-        self.toolbar.addAction("🎵 加载音频", self._load_file)
-        self.toolbar.addAction("📊 分析BPM", self._analyze)
-        self.toolbar.addAction("📈 BPM曲线", self._compute_bpm_curve)
-        self.toolbar.addAction("💾 导出CSV", self._export_csv)
+        self.toolbar.addAction(" 加载音频", self._load_file)
+        self.toolbar.addAction(" 分析BPM", self._analyze)
+        self.toolbar.addAction(" BPM曲线", self._compute_bpm_curve)
+        self.toolbar.addAction(" 导出CSV", self._export_csv)
         
         self.logger.info("BPM分析器已就绪")
     
