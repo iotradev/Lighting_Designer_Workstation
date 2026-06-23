@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
     QDockWidget, QFileDialog, QMessageBox, QApplication,
 )
 from PySide6.QtCore import Qt, QTimer, QByteArray, QSize
-from PySide6.QtGui import QAction, QKeySequence, QDragEnterEvent, QDropEvent
+from PySide6.QtGui import QAction, QKeySequence, QDragEnterEvent, QDropEvent, QPalette, QColor
 
 BASE_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(BASE_DIR / "Common"))
@@ -38,6 +38,23 @@ def _ensure_dpi_awareness():
             app.setFont(font)
 
 
+def _apply_dark_palette(app):
+    """应用深色主题 Palette，确保菜单栏等原生控件使用深色"""
+    palette = QPalette()
+    palette.setColor(QPalette.ColorRole.Window, QColor("#18181b"))
+    palette.setColor(QPalette.ColorRole.WindowText, QColor("#cccccc"))
+    palette.setColor(QPalette.ColorRole.Base, QColor("#1e1e21"))
+    palette.setColor(QPalette.ColorRole.AlternateBase, QColor("#27272a"))
+    palette.setColor(QPalette.ColorRole.Text, QColor("#cccccc"))
+    palette.setColor(QPalette.ColorRole.Button, QColor("#2d2d30"))
+    palette.setColor(QPalette.ColorRole.ButtonText, QColor("#cccccc"))
+    palette.setColor(QPalette.ColorRole.Highlight, QColor("#e8912d"))
+    palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#ffffff"))
+    palette.setColor(QPalette.ColorRole.ToolTipBase, QColor("#333337"))
+    palette.setColor(QPalette.ColorRole.ToolTipText, QColor("#cccccc"))
+    app.setPalette(palette)
+
+
 class BaseToolWindow(QMainWindow):
     """基础工具窗口，为所有工具提供统一的界面框架。"""
 
@@ -45,6 +62,7 @@ class BaseToolWindow(QMainWindow):
                  width: int = 1400, height: int = 900, parent=None):
         super().__init__(parent)
         _ensure_dpi_awareness()
+        _apply_dark_palette(QApplication.instance())
 
         self.tool_name = tool_name
         self.tool_title = tool_title
