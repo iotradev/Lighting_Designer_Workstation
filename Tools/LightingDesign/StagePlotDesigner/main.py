@@ -459,26 +459,26 @@ class StagePlotDesigner(BaseToolWindow):
         sb = self.statusbar
         sb.setStyleSheet("""
             QStatusBar {
-                background: #1a1a2e;
-                border-top: 1px solid #2a2a3e;
-                color: #8888aa;
-                font-size: 12px;
-                padding: 2px 8px;
+                background: #1e1e1e;
+                border-top: 1px solid #333333;
+                color: #999999;
+                font-size: 13px;
+                padding: 3px 10px;
             }
             QStatusBar::item { border: none; }
-            QLabel { background: transparent; padding: 0 6px; }
+            QLabel { background: transparent; padding: 0 10px; }
         """)
 
         # 左侧：元素数量
         self._lbl_elements = QLabel("元素: 0")
-        self._lbl_elements.setStyleSheet("color: #7c7caa; font-size: 12px; background: transparent;")
+        self._lbl_elements.setStyleSheet("color: #888888; font-size: 13px; background: transparent;")
         sb.addWidget(self._lbl_elements, 1)
 
         # 右侧：网格 | 吸附 | 缩放 | 坐标 | 版本
-        sep_style = "color: #3a3a4e; font-size: 12px; background: transparent; padding: 0 2px;"
+        sep_style = "color: #444444; font-size: 13px; background: transparent; padding: 0 4px;"
 
         self._lbl_snap = QLabel("磁铁 ON")
-        self._lbl_snap.setStyleSheet("color: #4ec9b0; font-size: 12px; background: transparent;")
+        self._lbl_snap.setStyleSheet("color: #4ec9b0; font-size: 13px; background: transparent;")
         sb.addPermanentWidget(self._lbl_snap)
 
         sep1 = QLabel("|")
@@ -486,7 +486,7 @@ class StagePlotDesigner(BaseToolWindow):
         sb.addPermanentWidget(sep1)
 
         self._lbl_grid = QLabel("▦ 网格")
-        self._lbl_grid.setStyleSheet("color: #4ec9b0; font-size: 12px; background: transparent;")
+        self._lbl_grid.setStyleSheet("color: #4ec9b0; font-size: 13px; background: transparent;")
         sb.addPermanentWidget(self._lbl_grid)
 
         sep2 = QLabel("|")
@@ -494,7 +494,7 @@ class StagePlotDesigner(BaseToolWindow):
         sb.addPermanentWidget(sep2)
 
         self._lbl_zoom = QLabel("100%")
-        self._lbl_zoom.setStyleSheet("color: #e8912d; font-size: 12px; font-weight: bold; background: transparent;")
+        self._lbl_zoom.setStyleSheet("color: #e8912d; font-size: 13px; font-weight: bold; background: transparent;")
         sb.addPermanentWidget(self._lbl_zoom)
 
         sep3 = QLabel("|")
@@ -502,8 +502,8 @@ class StagePlotDesigner(BaseToolWindow):
         sb.addPermanentWidget(sep3)
 
         self._lbl_cursor = QLabel("X: 0  Y: 0")
-        self._lbl_cursor.setStyleSheet("color: #8888aa; font-size: 12px; background: transparent;")
-        self._lbl_cursor.setFixedWidth(130)
+        self._lbl_cursor.setStyleSheet("color: #999999; font-size: 13px; background: transparent;")
+        self._lbl_cursor.setFixedWidth(140)
         sb.addPermanentWidget(self._lbl_cursor)
 
         sep4 = QLabel("|")
@@ -511,7 +511,7 @@ class StagePlotDesigner(BaseToolWindow):
         sb.addPermanentWidget(sep4)
 
         self._lbl_version = QLabel(f"v{self.VERSION}")
-        self._lbl_version.setStyleSheet("color: #555577; font-size: 11px; background: transparent;")
+        self._lbl_version.setStyleSheet("color: #555555; font-size: 12px; background: transparent;")
         sb.addPermanentWidget(self._lbl_version)
 
         # 连接信号更新状态
