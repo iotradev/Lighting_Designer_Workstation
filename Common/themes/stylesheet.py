@@ -36,45 +36,65 @@ QMainWindow::separator {{
 QMenuBar {{
     background-color: {c['menu_bg']};
     border-bottom: 1px solid {c['border']};
-    padding: 0px;
+    padding: 2px 4px;
+    spacing: 2px;
+    font-size: {f['size_small']}px;
 }}
 QMenuBar::item {{
-    padding: 3px 8px;
+    padding: 5px 12px;
     background: transparent;
+    border-radius: {r['sm']}px;
+    margin: 1px 2px;
 }}
 QMenuBar::item:selected {{
     background-color: {c['highlight']};
+    color: {c['text_bright']};
+}}
+QMenuBar::item:pressed {{
+    background-color: {c['accent']};
+    color: {c['text_bright']};
 }}
 QMenu {{
     background-color: {c['menu_bg']};
     border: 1px solid {c['border']};
+    border-radius: {r['sm']}px;
     padding: 4px;
 }}
 QMenu::item {{
-    padding: 5px 20px 5px 10px;
+    padding: 6px 24px 6px 12px;
+    border-radius: {r['sm']}px;
+    margin: 2px 4px;
 }}
 QMenu::item:selected {{
     background-color: {c['accent']};
+    color: {c['text_bright']};
+}}
+QMenu::item:disabled {{
+    color: {c['text_dim']};
 }}
 QMenu::separator {{
     height: 1px;
     background-color: {c['border']};
     margin: 4px 8px;
 }}
+QMenu::icon {{
+    padding: 0px 4px;
+}}
 
 /* 工具栏 */
 QToolBar {{
     background-color: {c['toolbar_bg']};
     border: none;
-    padding: 2px;
-    spacing: 2px;
+    padding: 4px 6px;
+    spacing: 4px;
 }}
 QToolButton {{
     background-color: transparent;
     border: 1px solid transparent;
     border-radius: {r['sm']}px;
-    padding: 4px 8px;
+    padding: 5px 10px;
     color: {c['text']};
+    font-size: {f['size_small']}px;
 }}
 QToolButton:hover {{
     background-color: {c['button_hover']};
@@ -306,21 +326,38 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
 QGroupBox {{
     border: 1px solid {c['border']};
     border-radius: {r['md']}px;
-    margin-top: 22px;
-    padding-top: 18px;
-    padding-bottom: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
+    margin-top: 20px;
+    padding: 16px 10px 10px 10px;
     font-weight: bold;
     color: {c['accent']};
 }}
 QGroupBox::title {{
     subcontrol-origin: margin;
     subcontrol-position: top left;
-    left: 10px;
-    padding: 3px 10px;
+    left: 12px;
+    padding: 2px 10px;
     color: {c['accent']};
     background-color: {c['background']};
+}}
+QGroupBox QWidget {{
+    margin: 0px;
+    padding: 0px;
+}}
+QGroupBox QLabel {{
+    padding: 2px 4px;
+    min-height: 20px;
+}}
+QGroupBox QPushButton {{
+    min-height: 26px;
+    padding: 4px 10px;
+}}
+QGroupBox QComboBox {{
+    min-height: 26px;
+    padding: 4px 8px;
+}}
+QGroupBox QSpinBox, QGroupBox QDoubleSpinBox {{
+    min-height: 26px;
+    padding: 4px 6px;
 }}
 
 /* 进度条 */
