@@ -34,36 +34,41 @@ QMainWindow::separator {{
 
 /* 菜单栏 */
 QMenuBar {{
-    background-color: {c['menu_bg']};
-    border-bottom: 1px solid {c['border']};
-    padding: 2px 4px;
-    spacing: 2px;
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 {c['menu_bg']}, stop:1 {c['toolbar_bg']});
+    border-bottom: 2px solid {c['accent']}44;
+    padding: 3px 6px;
+    spacing: 3px;
     font-size: {f['size_small']}px;
+    font-weight: bold;
 }}
 QMenuBar::item {{
-    padding: 5px 12px;
+    padding: 6px 14px;
     background: transparent;
     border-radius: {r['sm']}px;
-    margin: 1px 2px;
+    margin: 2px 3px;
+    color: {c['text']};
 }}
 QMenuBar::item:selected {{
-    background-color: {c['highlight']};
-    color: {c['text_bright']};
+    background-color: {c['accent']}33;
+    color: {c['accent']};
+    border: 1px solid {c['accent']}44;
 }}
 QMenuBar::item:pressed {{
     background-color: {c['accent']};
     color: {c['text_bright']};
 }}
 QMenu {{
-    background-color: {c['menu_bg']};
+    background-color: {c['surface']};
     border: 1px solid {c['border']};
-    border-radius: {r['sm']}px;
-    padding: 4px;
+    border-radius: {r['md']}px;
+    padding: 6px;
 }}
 QMenu::item {{
-    padding: 6px 24px 6px 12px;
+    padding: 7px 28px 7px 14px;
     border-radius: {r['sm']}px;
     margin: 2px 4px;
+    color: {c['text']};
 }}
 QMenu::item:selected {{
     background-color: {c['accent']};
@@ -71,37 +76,41 @@ QMenu::item:selected {{
 }}
 QMenu::item:disabled {{
     color: {c['text_dim']};
+    background: transparent;
 }}
 QMenu::separator {{
     height: 1px;
     background-color: {c['border']};
-    margin: 4px 8px;
+    margin: 5px 10px;
 }}
 QMenu::icon {{
-    padding: 0px 4px;
+    padding: 0px 6px;
 }}
 
 /* 工具栏 */
 QToolBar {{
-    background-color: {c['toolbar_bg']};
-    border: none;
-    padding: 4px 6px;
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 {c['toolbar_bg']}, stop:1 {c['surface']});
+    border-bottom: 1px solid {c['border']};
+    padding: 4px 8px;
     spacing: 4px;
 }}
 QToolButton {{
     background-color: transparent;
     border: 1px solid transparent;
     border-radius: {r['sm']}px;
-    padding: 5px 10px;
+    padding: 5px 12px;
     color: {c['text']};
     font-size: {f['size_small']}px;
 }}
 QToolButton:hover {{
-    background-color: {c['button_hover']};
-    border: 1px solid {c['border']};
+    background-color: {c['accent']}22;
+    border: 1px solid {c['accent']}44;
+    color: {c['accent']};
 }}
 QToolButton:pressed {{
-    background-color: {c['accent_pressed']};
+    background-color: {c['accent']};
+    color: {c['text_bright']};
 }}
 
 /* 状态栏 */
