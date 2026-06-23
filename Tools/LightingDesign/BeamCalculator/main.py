@@ -279,7 +279,7 @@ class BeamCalculator(BaseToolWindow):
         )
         
         self.diagram.update_diagram(angle, distance, self.fixture_height.value())
-        self.logger.info(f"覆盖宽度: {beam_width:.2f}m, 面积: {area:.2f}m²")
+        self.logger.info(f"覆盖宽度: {beam_width:.2f}m, 面积: {area:.2f}m2")
     
     def _calc_distance(self):
         angle = self.dist_angle.value()
