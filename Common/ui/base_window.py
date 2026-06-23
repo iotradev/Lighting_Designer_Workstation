@@ -153,13 +153,16 @@ class BaseToolWindow(QMainWindow):
         self.statusbar = QStatusBar()
         self.setStatusBar(self.statusbar)
 
-        self.status_project = QLabel("项目: ")
+        self.status_project = QLabel("项目: 未打开")
+        self.status_project.setStyleSheet("color: #888; font-size: 12px;")
         self.statusbar.addWidget(self.status_project, 1)
 
         self.status_ready = QLabel("就绪")
+        self.status_ready.setStyleSheet("color: #4ec9b0; font-size: 12px;")
         self.statusbar.addPermanentWidget(self.status_ready)
 
         self.status_version = QLabel(f"v{self.version}")
+        self.status_version.setStyleSheet("color: #666; font-size: 11px;")
         self.statusbar.addPermanentWidget(self.status_version)
 
     def _init_dock_panels(self):

@@ -820,22 +820,11 @@ if __name__ == '__main__':
     import traceback
     try:
         from PySide6.QtWidgets import QApplication
-        from PySide6.QtCore import Qt, QTimer
         app = QApplication(sys.argv)
         window = TimecodeGenerator()
-        
-        # 强制窗口可见
-        window.setWindowFlags(window.windowFlags() | Qt.WindowStaysOnTopHint)
         window.show()
         window.raise_()
         window.activateWindow()
-        
-        # 2秒后取消置顶
-        def unpin():
-            window.setWindowFlags(window.windowFlags() & ~Qt.WindowStaysOnTopHint)
-            window.show()
-        QTimer.singleShot(2000, unpin)
-        
         sys.exit(app.exec())
     except Exception as _e:
         traceback.print_exc()

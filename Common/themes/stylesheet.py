@@ -90,9 +90,17 @@ QStatusBar {{
     color: {c['text_dim']};
     font-size: {f['size_small']}px;
     border-top: 1px solid {c['border']};
+    padding: 2px 8px;
+    min-height: 24px;
 }}
 QStatusBar::item {{
     border: none;
+    padding: 0 4px;
+}}
+QStatusBar QLabel {{
+    color: {c['text_dim']};
+    font-size: {f['size_small']}px;
+    padding: 0 6px;
 }}
 
 /* 标签页 */
