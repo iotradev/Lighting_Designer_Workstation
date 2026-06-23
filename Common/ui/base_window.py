@@ -335,21 +335,16 @@ class BaseToolWindow(QMainWindow):
         self.config.save_window_layout(self.tool_name, self.saveGeometry().toHex().data().decode())
 
     def _restore_geometry(self):
-        """恢复窗口位置，确保窗口在可见屏幕范围内"""
+        """恢复窗口位置"""
         geo = self.config.load_window_layout(self.tool_name)
         if geo:
             self.restoreGeometry(QByteArray.fromHex(geo.encode()))
-        # 确保窗口在可见屏幕范围内
-        screen = QApplication.primaryScreen()
-        if screen:
-            sr = screen.availableGeometry()
-            wr = self.frameGeometry()
-            if not sr.intersects(wr):
-                self.move(sr.center() - self.rect().center())
 
     def showEvent(self, event):
         super().showEvent(event)
-        _apply_dark_title_bar(self)
+        if not getattr(self, '_dark_title_applied', False):
+            self._dark_title_applied = True
+            _apply_dark_title_bar(self)
 
     # ===== 主题切换 =====
 

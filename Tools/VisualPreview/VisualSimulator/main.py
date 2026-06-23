@@ -351,14 +351,17 @@ class FixtureListPanel(QWidget):
         self.refresh()
 
     def refresh(self):
+        self.list_widget.blockSignals(True)
         self.list_widget.clear()
         if not self.stage:
+            self.list_widget.blockSignals(False)
             return
         for i, fx in enumerate(self.stage.fixtures):
             item = QListWidgetItem(f"{'▶ ' if fx.selected else ''}{fx.name}  ({fx.id})")
             self.list_widget.addItem(item)
             if fx.selected:
                 self.list_widget.setCurrentRow(i)
+        self.list_widget.blockSignals(False)
         self._update_color_preview()
 
     def _on_select(self, row: int):
