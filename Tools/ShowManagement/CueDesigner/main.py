@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
     QHeaderView, QScrollArea, QFrame
 )
 from PySide6.QtCore import Qt, QTimer, Signal
-from PySide6.QtGui import QColor, QPainter, QBrush
+from PySide6.QtGui import QColor, QPainter, QBrush, QFont
 
 from cue_engine import Cue, CueList, CrossfadeInterpolator, EffectGenerator, EffectType
 
@@ -63,41 +63,68 @@ class DMXGridWidget(QWidget):
 
 
 class DMXEditGrid(QWidget):
-    """可编辑的DMX通道网格(16x32)"""
+    """可编辑的DMX通道网格(16x32) - 自绘方案，无QSpinBox"""
     channel_changed = Signal(int, int)  # channel(0-based), value
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.values = [0] * 512
-        self.spinboxes = []
-        layout = QGridLayout(self)
-        layout.setSpacing(1)
-        self._build_grid()
+        self.cols = 32
+        self.rows = 16
+        self.setMinimumSize(640, 320)
 
-    def _build_grid(self):
-        layout = self.layout()
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        w = self.width()
+        h = self.height()
+        cell_w = w / self.cols
+        cell_h = h / self.rows
+
+        painter.setFont(QFont("Consolas", 7))
         for i in range(512):
-            row = i // 32
-            col = i % 32
-            sb = QSpinBox()
-            sb.setRange(0, 255)
-            sb.setFixedSize(40, 22)
-            sb.setStyleSheet("font-size:9px;")
-            sb.setToolTip(f"CH {i+1}")
-            sb.valueChanged.connect(lambda v, ch=i: self._on_change(ch, v))
-            layout.addWidget(sb, row, col)
-            self.spinboxes.append(sb)
+            row = i // self.cols
+            col = i % self.cols
+            if row >= self.rows:
+                break
+            val = self.values[i]
+            x = int(col * cell_w)
+            y = int(row * cell_h)
+            cw = int(cell_w) - 1
+            ch = int(cell_h) - 1
 
-    def _on_change(self, channel, value):
-        self.values[channel] = value
-        self.channel_changed.emit(channel, value)
+            if val == 0:
+                bg = QColor(30, 30, 30)
+                fg = QColor(80, 80, 80)
+            elif val < 128:
+                bg = QColor(61, 40, 0)
+                fg = QColor(232, 145, 45)
+            else:
+                bg = QColor(232, 145, 45)
+                fg = QColor(255, 255, 255)
+
+            painter.setPen(QColor(60, 60, 60))
+            painter.fillRect(x + 1, y + 1, cw - 1, ch - 1, QBrush(bg))
+            painter.setPen(fg)
+            painter.drawText(x, y, cw, ch, Qt.AlignmentFlag.AlignCenter, str(val))
+
+        painter.end()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            w = self.width() / self.cols
+            h = self.height() / self.rows
+            col = int(event.position().x() / w)
+            row = int(event.position().y() / h)
+            ch = row * self.cols + col
+            if 0 <= ch < 512:
+                v = self.values[ch]
+                self.values[ch] = 128 if v == 0 else (255 if v == 128 else 0)
+                self.channel_changed.emit(ch, self.values[ch])
+                self.update()
 
     def set_values(self, values):
-        self.values = (values + [0]*512)[:512]
-        for i, sb in enumerate(self.spinboxes):
-            sb.blockSignals(True)
-            sb.setValue(self.values[i])
-            sb.blockSignals(False)
+        self.values = (values + [0] * 512)[:512]
+        self.update()
 
     def get_values(self):
         return self.values[:]

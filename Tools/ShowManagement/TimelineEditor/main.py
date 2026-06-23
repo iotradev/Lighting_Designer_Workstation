@@ -176,7 +176,7 @@ class TimelineTrackWidget(QWidget):
             pps = self.ruler.pixels_per_second
             off = self.ruler.scroll_offset
             t = (event.position().x() + off) / pps
-            v = max(0, min(100, (1 - (event.position().y() - 5) / (self.height() - 10))) * 100)
+            v = max(0, min(100, (1 - (event.position().y() - 5) / max(1, self.height() - 10)) * 100))
             kf = Keyframe(round(t, 2), round(v, 1))
             self.track.add_keyframe(kf)
             self.update()

@@ -289,7 +289,7 @@ class TitleBar(QFrame):
             self._drag_pos = event.globalPosition().toPoint() - self._parent.pos()
 
     def mouseMoveEvent(self, event):
-        if hasattr(self, "_drag_pos") and event.buttons() == Qt.MouseButton.LeftButton:
+        if getattr(self, "_drag_pos", None) is not None and event.buttons() == Qt.MouseButton.LeftButton:
             self._parent.move(event.globalPosition().toPoint() - self._drag_pos)
 
     def mouseReleaseEvent(self, event):
@@ -382,26 +382,9 @@ class CategoryCard(QFrame):
         self.setMinimumHeight(min_h)
 
     def _launch(self, folder, exe):
-        script = BASE_DIR / "Tools" / folder / exe / "main.py"
-        if not script.exists():
-            QMessageBox.warning(self, "错误", f"找不到: {script}")
-            return
-        if not PYTHON_EXE:
-            QMessageBox.critical(self, "未找到 Python",
-                "需要安装 Python 3.10+ 才能运行工具。\n\n"
-                "下载地址: https://www.python.org/downloads/\n\n"
-                "安装时请勾选 'Add Python to PATH'")
-            return
-        try:
-            env = os.environ.copy()
-            env["PYTHONPATH"] = str(BASE_DIR)
-            subprocess.Popen([PYTHON_EXE, str(script)], cwd=str(script.parent), env=env)
-        except Exception as e:
-            QMessageBox.critical(self, "启动失败",
-                f"无法启动 {exe}:\n{type(e).__name__}: {e}")
-            return
-        if self.tool_launched:
-            self.tool_launched.emit(folder, exe)
+        if self._run_tool(folder, exe):
+            if self.tool_launched:
+                self.tool_launched.emit(folder, exe)
 
 
 from PySide6.QtCore import Signal as _Signal
@@ -740,26 +723,30 @@ class LauncherWindow(QMainWindow):
         self.search_box.clear()
         self._filter_category(-1)
 
-    def _launch_tool(self, name, exe, desc, folder):
+    def _run_tool(self, folder, exe):
         script = BASE_DIR / "Tools" / folder / exe / "main.py"
         if not script.exists():
             QMessageBox.warning(self, "错误", f"找不到: {script}")
-            return
+            return False
         if not PYTHON_EXE:
             QMessageBox.critical(self, "未找到 Python",
                 "需要安装 Python 3.10+ 才能运行工具。\n\n"
                 "下载地址: https://www.python.org/downloads/\n\n"
                 "安装时请勾选 'Add Python to PATH'")
-            return
+            return False
         try:
             env = os.environ.copy()
-            env["PYTHONPATH"] = str(BASE_DIR)
+            env["PYTHONPATH"] = str(BASE_DIR) + os.pathsep + env.get("PYTHONPATH", "")
             subprocess.Popen([PYTHON_EXE, str(script)], cwd=str(script.parent), env=env)
         except Exception as e:
             QMessageBox.critical(self, "启动失败",
                 f"无法启动 {exe}:\n{type(e).__name__}: {e}")
-            return
-        self._on_tool_launched(folder, exe)
+            return False
+        return True
+
+    def _launch_tool(self, name, exe, desc, folder):
+        if self._run_tool(folder, exe):
+            self._on_tool_launched(folder, exe)
 
     def _on_tool_launched(self, folder, exe):
         recent = self.config.get("recent_tools", [])

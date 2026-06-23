@@ -21,10 +21,8 @@ class LogLevel(IntEnum):
     WARNING = 2
     ERROR = 3
 
-from PySide6.QtCore import Signal as _Signal
-
 class _LogEmitter(QObject):
-    log_message = _Signal(str, str, str)  # level, timestamp, message
+    log_message = Signal(str, str, str)  # level_name, timestamp, message
 
 class ToolLogger:
     """
@@ -54,6 +52,8 @@ class ToolLogger:
             LOGS_DIR.mkdir(parents=True, exist_ok=True)
             date_str = datetime.now().strftime("%Y%m%d")
             self._log_path = LOGS_DIR / f"{tool_name}_{date_str}.log"
+        # 连接信号到GUI更新（跨线程安全）
+        self._get_emitter().log_message.connect(self._append_to_widget, Signal.ConnectionType.QueuedConnection)
 
     def _write(self, level: LogLevel, msg: str):
         """"""
@@ -73,18 +73,20 @@ class ToolLogger:
             except IOError:
                 print(f"Failed to write log: {self._log_path}", file=sys.stderr)
         if self.log_widget and isinstance(self.log_widget, QTextEdit):
-            self._append_to_widget(level, ts, msg)
+            self._get_emitter().log_message.emit(level.name, ts, msg)
 
-    def _append_to_widget(self, level, ts, msg):
+    def _append_to_widget(self, level_name, ts, msg):
         """"""
+        if not self.log_widget:
+            return
         fmt = QTextCharFormat()
         color_map = {
-            LogLevel.DEBUG: QColor("#808080"),
-            LogLevel.INFO: QColor("#569cd6"),
-            LogLevel.WARNING: QColor("#e8912d"),
-            LogLevel.ERROR: QColor("#f44747"),
+            "DEBUG": QColor("#808080"),
+            "INFO": QColor("#569cd6"),
+            "WARNING": QColor("#e8912d"),
+            "ERROR": QColor("#f44747"),
         }
-        fmt.setForeground(color_map.get(level, QColor("#cccccc")))
+        fmt.setForeground(color_map.get(level_name, QColor("#cccccc")))
         cursor = self.log_widget.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
         cursor.insertText(f"[{ts[-12:]}] {msg}\n", fmt)

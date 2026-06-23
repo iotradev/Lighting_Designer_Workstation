@@ -3,6 +3,7 @@
 """
 import wave
 import numpy as np
+from collections import deque
 from typing import Optional, List, Tuple
 from dataclasses import dataclass, field
 
@@ -41,7 +42,7 @@ class SpectrumEngine:
         self.current_position: int = 0
 
         # 瀑布图数据缓冲区
-        self.waterfall_buffer: List[np.ndarray] = []
+        self.waterfall_buffer: deque = deque(maxlen=self.waterfall_max_lines)
         self.waterfall_max_lines = 200
 
         # Hanning窗函数
@@ -81,16 +82,17 @@ class SpectrumEngine:
             self.sample_rate = wf.getframerate()
             self.total_frames = wf.getnframes()
             raw = wf.readframes(self.total_frames)
+            sampwidth = wf.getsampwidth()
 
         # 转换为numpy数组
-        if wf.getsampwidth() == 2:
+        if sampwidth == 2:
             data = np.frombuffer(raw, dtype=np.int16).astype(np.float64) / 32768.0
-        elif wf.getsampwidth() == 4:
+        elif sampwidth == 4:
             data = np.frombuffer(raw, dtype=np.int32).astype(np.float64) / 2147483648.0
-        elif wf.getsampwidth() == 1:
+        elif sampwidth == 1:
             data = (np.frombuffer(raw, dtype=np.uint8).astype(np.float64) - 128.0) / 128.0
         else:
-            raise ValueError(f"不支持的采样位深: {wf.getsampwidth() * 8}位")
+            raise ValueError(f"不支持的采样位深: {sampwidth * 8}位")
 
         # 多声道取均值
         if self.channels > 1:
@@ -164,8 +166,6 @@ class SpectrumEngine:
 
         # 更新瀑布图缓冲
         self.waterfall_buffer.append(magnitudes_db.copy())
-        if len(self.waterfall_buffer) > self.waterfall_max_lines:
-            self.waterfall_buffer.pop(0)
 
         return frame
 

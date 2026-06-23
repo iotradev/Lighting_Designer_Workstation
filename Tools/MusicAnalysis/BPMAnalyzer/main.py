@@ -448,6 +448,8 @@ class BPMAnalyzerWindow(BaseToolWindow):
         self.logger.info(f"加载文件: {file_path}")
         self.status_ready.setText("正在加载...")
         self._pending_file = file_path
+        if self._load_worker and self._load_worker.isRunning():
+            self._load_worker.wait(3000)
         self._load_worker = _Worker(self.engine.load_audio, file_path)
         self._load_worker.finished.connect(self._on_load_done)
         self._load_worker.start()
@@ -479,6 +481,8 @@ class BPMAnalyzerWindow(BaseToolWindow):
 
         self.logger.info("开始BPM分析...")
         self.status_ready.setText("正在分析...")
+        if self._analyze_worker and self._analyze_worker.isRunning():
+            self._analyze_worker.wait(3000)
         self._analyze_worker = _Worker(self.engine.detect_bpm)
         self._analyze_worker.finished.connect(self._on_analyze_done)
         self._analyze_worker.start()
@@ -510,6 +514,8 @@ class BPMAnalyzerWindow(BaseToolWindow):
 
         self.logger.info("计算BPM变化曲线...")
         self.status_ready.setText("正在计算BPM曲线...")
+        if self._curve_worker and self._curve_worker.isRunning():
+            self._curve_worker.wait(3000)
         self._curve_worker = _Worker(self.engine.compute_bpm_curve, 5.0, 1.0)
         self._curve_worker.finished.connect(self._on_curve_done)
         self._curve_worker.start()

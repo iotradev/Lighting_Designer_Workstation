@@ -103,7 +103,7 @@ class DMXBar(QWidget):
 
     def _update_from_mouse(self, x):
         bar_x = 36
-        bar_w = self.width() - 80
+        bar_w = max(1, self.width() - 80)
         val = int(max(0, min(255, (x - bar_x) / bar_w * 255)))
         if val != self._value:
             self._value = val

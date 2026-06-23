@@ -77,6 +77,9 @@ def hex_to_rgb(hex_color):
 
 def kelvin_to_rgb(kelvin):
     """(K)RGB"""
+    if kelvin <= 0:
+        return (0, 0, 0)
+    kelvin = max(1000, min(40000, kelvin))
     temp = kelvin / 100
     if temp <= 66:
         r = 255

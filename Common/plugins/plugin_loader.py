@@ -29,7 +29,11 @@ class PluginInfo:
 
 
 class PluginLoader:
-    """"""
+    """插件加载器
+
+    安全警告: 插件通过 exec_module 直接执行，无沙箱隔离。
+    仅加载可信来源的插件。恶意插件可执行任意代码。
+    """
 
     def __init__(self, logger=None):
         self.plugins: Dict[str, PluginInfo] = {}
