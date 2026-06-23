@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QHeaderView, QFileDialog, QMessageBox, QCheckBox, QTabWidget,
     QListWidgetItem, QToolBar
 )
-from PySide6.QtCore import Qt, QPointF, QRectF, QSizeF, QTimer
+from PySide6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PySide6.QtGui import (
     QPainter, QPen, QBrush, QColor, QFont, QPolygonF,
     QMouseEvent, QPaintEvent, QWheelEvent, QAction, QKeySequence
@@ -532,20 +532,5 @@ class LaserPlannerWindow(BaseToolWindow):
 
 
 if __name__ == '__main__':
-    import traceback
-    try:
-
-        from PySide6.QtWidgets import QApplication
-        app = QApplication(sys.argv)
-        window = LaserPlannerWindow()
-        window.show()
-        sys.exit(app.exec())
-    except Exception as _e:
-        traceback.print_exc()
-        try:
-            from PySide6.QtWidgets import QApplication, QMessageBox
-            _app = QApplication.instance() or QApplication([])
-            QMessageBox.critical(None, "LaserPlanner - 启动错误",
-                f"{type(_e).__name__}: {_e}\n\n请检查日志文件。")
-        except Exception:
-            pass
+    from launcher_utils import run_tool
+    run_tool(LaserPlannerWindow, "LaserPlanner - 启动错误")

@@ -402,27 +402,6 @@ class DMXCalculator(BaseToolWindow):
         self.logger.info("DMX计算器初始化完成")
 
 
-def main():
-    import sys
-    from PySide6.QtWidgets import QApplication
-
-    app = QApplication(sys.argv)
-    window = DMXCalculator()
-    window.show()
-    sys.exit(app.exec())
-
-
-if __name__ == "__main__":
-    import traceback
-    try:
-
-        main()
-    except Exception as _e:
-        traceback.print_exc()
-        try:
-            from PySide6.QtWidgets import QApplication, QMessageBox
-            _app = QApplication.instance() or QApplication([])
-            QMessageBox.critical(None, "DMXCalculator - 启动错误",
-                f"{type(_e).__name__}: {_e}\n\n请检查日志文件。")
-        except Exception:
-            pass
+if __name__ == '__main__':
+    from launcher_utils import run_tool
+    run_tool(DMXCalculator, "DMXCalculator - 启动错误")

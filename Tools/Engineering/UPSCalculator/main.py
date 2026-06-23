@@ -196,20 +196,5 @@ class UPSCalculatorWindow(BaseToolWindow):
 
 
 if __name__ == '__main__':
-    import traceback
-    try:
-
-        from PySide6.QtWidgets import QApplication
-        app = QApplication(sys.argv)
-        win = UPSCalculatorWindow()
-        win.show()
-        sys.exit(app.exec())
-    except Exception as _e:
-        traceback.print_exc()
-        try:
-            from PySide6.QtWidgets import QApplication, QMessageBox
-            _app = QApplication.instance() or QApplication([])
-            QMessageBox.critical(None, "UPSCalculator - 启动错误",
-                f"{type(_e).__name__}: {_e}\n\n请检查日志文件。")
-        except Exception:
-            pass
+    from launcher_utils import run_tool
+    run_tool(UPSCalculatorWindow, "UPSCalculator - 启动错误")

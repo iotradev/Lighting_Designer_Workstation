@@ -4,6 +4,7 @@
 
 import sys
 import math
+import random
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / 'Common'))
@@ -57,7 +58,6 @@ def draw_leaves_pattern(painter, cx, cy, r):
 
 def draw_breakup_pattern(painter, cx, cy, r):
     """碎裂图案"""
-    import random
     random.seed(42)
     for _ in range(30):
         x = cx + random.uniform(-r, r)
@@ -336,7 +336,6 @@ class GoboCanvas(QWidget):
                 offset_x = 0
                 offset_y = 0
                 if layer > 0 and self._blur_radius > 0:
-                    import random
                     random.seed(layer * 7)
                     offset_x = random.uniform(-self._blur_radius, self._blur_radius)
                     offset_y = random.uniform(-self._blur_radius, self._blur_radius)
@@ -524,20 +523,5 @@ class GoboPreviewer(BaseToolWindow):
 # ─── 入口 ────────────────────────────────────────────────────────────────────
 
 if __name__ == '__main__':
-    import traceback
-    try:
-
-        from PySide6.QtWidgets import QApplication
-        app = QApplication(sys.argv)
-        window = GoboPreviewer()
-        window.show()
-        sys.exit(app.exec())
-    except Exception as _e:
-        traceback.print_exc()
-        try:
-            from PySide6.QtWidgets import QApplication, QMessageBox
-            _app = QApplication.instance() or QApplication([])
-            QMessageBox.critical(None, "GoboPreviewer - 启动错误",
-                f"{type(_e).__name__}: {_e}\n\n请检查日志文件。")
-        except Exception:
-            pass
+    from launcher_utils import run_tool
+    run_tool(GoboPreviewer, "GoboPreviewer - 启动错误")
