@@ -5,6 +5,7 @@ MIDI Monitor - MIDI 信号监控工具
 """
 import sys
 import time
+import threading
 from pathlib import Path
 
 # 将 Common 目录加入模块路径
@@ -192,6 +193,7 @@ class MIDIMonitorWindow(BaseToolWindow):
         self._max_rows = 2000
         self._active_filters: set[int] = set(FILTER_TYPES.values())
         self._message_queue: list[MIDIMessage] = []
+        self._queue_lock = threading.Lock()
 
         self._build_ui()
         self._refresh_devices()
@@ -364,15 +366,16 @@ class MIDIMonitorWindow(BaseToolWindow):
     @Slot(object)
     def _on_midi_message(self, msg: MIDIMessage):
         """从引擎线程接收消息（线程安全，存入队列）"""
-        self._message_queue.append(msg)
+        with self._queue_lock:
+            self._message_queue.append(msg)
 
     def _flush_messages(self):
         """定时将队列中的消息刷新到 UI"""
-        if not self._message_queue:
-            return
-        # 原子交换：取出当前队列并替换为空列表，避免线程竞争
-        messages = self._message_queue
-        self._message_queue = []
+        with self._queue_lock:
+            if not self._message_queue:
+                return
+            messages = self._message_queue
+            self._message_queue = []
 
         for msg in messages:
             # 过滤

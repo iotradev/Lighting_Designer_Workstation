@@ -4,7 +4,7 @@
 
 : D:/Lighting_Designer_Workstation/Config/
 """
-import json, os
+import json
 from pathlib import Path
 from datetime import datetime
 
@@ -69,11 +69,10 @@ class ConfigManager:
         return val
 
     def set(self, key, value):
-        """"""
         keys = key.split(".")
         d = self._data
         for k in keys[:-1]:
-            if k not in d:
+            if k not in d or not isinstance(d[k], dict):
                 d[k] = {}
             d = d[k]
         d[keys[-1]] = value
@@ -110,4 +109,4 @@ class ConfigManager:
         """"""
         layouts = self._data.get("window_layouts", {})
         layout = layouts.get(name)
-        return layout["geometry"] if layout else None
+        return layout.get("geometry") if layout else None

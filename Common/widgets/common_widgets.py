@@ -213,18 +213,7 @@ class SearchBox(QLineEdit):
         super().__init__(parent)
         self.setPlaceholderText(placeholder)
         self.setClearButtonEnabled(True)
-        self.setStyleSheet("""
-            QLineEdit {
-                background-color: #1e1e1e;
-                border: 1px solid #3f3f46;
-                border-radius: 15px;
-                padding: 6px 16px;
-                color: #cccccc;
-            }
-            QLineEdit:focus {
-                border-color: #e8912d;
-            }
-        """)
+        self.setObjectName("search_box")
 
 
 class PropertyPanel(QWidget):

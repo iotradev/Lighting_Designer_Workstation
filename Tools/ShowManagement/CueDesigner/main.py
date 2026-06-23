@@ -361,7 +361,9 @@ class CueDesignerWindow(BaseToolWindow):
         self.cue_table.setSortingEnabled(False)
         self.cue_table.setRowCount(len(self.cue_list.cues))
         for i, cue in enumerate(self.cue_list.cues):
-            self.cue_table.setItem(i, 0, QTableWidgetItem(str(cue.cue_number)))
+            item0 = QTableWidgetItem(str(cue.cue_number))
+            item0.setData(Qt.ItemDataRole.UserRole, i)
+            self.cue_table.setItem(i, 0, item0)
             self.cue_table.setItem(i, 1, QTableWidgetItem(cue.name))
             self.cue_table.setItem(i, 2, QTableWidgetItem(str(cue.fade_in)))
             self.cue_table.setItem(i, 3, QTableWidgetItem(str(cue.fade_out)))
@@ -369,8 +371,11 @@ class CueDesignerWindow(BaseToolWindow):
         self.cue_table.setSortingEnabled(True)
 
     def _on_cue_selected(self, row, col):
-        self.current_index = row
-        cue = self.cue_list.get_cue(row)
+        item = self.cue_table.item(row, 0)
+        if not item:
+            return
+        self.current_index = item.data(Qt.ItemDataRole.UserRole)
+        cue = self.cue_list.get_cue(self.current_index)
         if cue:
             self._load_cue_to_editor(cue)
             self.dmx_preview.set_values(cue.channel_values)

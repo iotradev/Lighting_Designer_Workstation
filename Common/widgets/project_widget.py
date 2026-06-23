@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
 
 from PySide6.QtCore import Qt, Signal
 
-from PySide6.QtGui import QFont, QAction
+from PySide6.QtGui import QAction
 
 from pathlib import Path
 
@@ -192,7 +192,7 @@ class ProjectWidget(QWidget):
 
     def _open_in_explorer(self, item):
 
-        from launcher_utils import run_process
+        from Common.launcher_utils import run_process
 
         path = Path(item.data(Qt.ItemDataRole.UserRole)).parent
 

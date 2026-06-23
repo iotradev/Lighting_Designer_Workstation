@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGroupBox,
     QLabel, QComboBox, QTextEdit, QPushButton, QLineEdit,
     QTableWidget, QTableWidgetItem, QHeaderView, QSplitter,
-    QTabWidget, QScrollArea, QFrame, QFileDialog, QMessageBox,
+    QTabWidget, QFileDialog, QMessageBox,
     QPlainTextEdit, QListWidget, QListWidgetItem, QGridLayout
 )
 from PySide6.QtCore import Qt
@@ -219,11 +219,22 @@ class RuleEngine:
     
     def _build_beam_positions(self, venue_info, fixtures_text):
         positions = []
-        for i, pos in enumerate(venue_info["positions"]):
+        user_fixtures = []
+        if fixtures_text:
+            for line in fixtures_text.strip().split("\n"):
+                line = line.strip()
+                if line:
+                    user_fixtures.append(line)
+        
+        venue_positions = venue_info["positions"]
+        for i, pos in enumerate(venue_positions):
             angle_h = 15 + (i * 25) % 90
             angle_v = 30 + (i * 15) % 45
+            fixture_note = ""
+            if i < len(user_fixtures):
+                fixture_note = f" ({user_fixtures[i]})"
             positions.append({
-                "name": pos,
+                "name": pos + fixture_note,
                 "horizontal_angle": angle_h,
                 "vertical_angle": angle_v,
                 "suggested_gobo": "无" if i % 3 == 0 else ["棱镜", "光栅", "水纹"][i % 3],

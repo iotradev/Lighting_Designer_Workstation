@@ -14,11 +14,22 @@ from PySide6.QtWidgets import (
     QCheckBox, QGroupBox, QGridLayout, QSplitter, QSizePolicy, QSpinBox,
     QDoubleSpinBox, QMessageBox
 )
-from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import Qt, QTimer, Signal, QThread
 from PySide6.QtGui import QPainter, QColor, QPen, QBrush, QFont, QLinearGradient, QDragEnterEvent, QDropEvent
 
 from ui.base_window import BaseToolWindow
 from bpm_engine import BPMEngine
+
+
+class _Worker(QThread):
+    finished = Signal(object)
+    def __init__(self, func, *args):
+        super().__init__()
+        self._func = func
+        self._args = args
+    def run(self):
+        result = self._func(*self._args)
+        self.finished.emit(result)
 
 
 class WaveformWidget(QWidget):
@@ -436,18 +447,21 @@ class BPMAnalyzerWindow(BaseToolWindow):
         """执行加载"""
         self.logger.info(f"加载文件: {file_path}")
         self.status_ready.setText("正在加载...")
-        
-        result = self.engine.load_audio(file_path)
-        
+        self._pending_file = file_path
+        self._load_worker = _Worker(self.engine.load_audio, file_path)
+        self._load_worker.finished.connect(self._on_load_done)
+        self._load_worker.start()
+
+    def _on_load_done(self, result):
+        file_path = self._pending_file
         if result['success']:
             self.current_file = file_path
             self.file_label.setText(f"✓ {Path(file_path).name} ({result['duration']:.1f}秒, {result['sample_rate']}Hz)")
             self.file_label.setStyleSheet("color: #00dc82; padding: 4px;")
-            
-            # 显示波形
+
             waveform = self.engine.get_waveform_data(4000)
             self.waveform_widget.set_data(waveform, duration=result['duration'], sample_rate=result['sample_rate'])
-            
+
             self.status_ready.setText("文件已加载")
             self.logger.info(f"加载成功: {result['samples_count']} 采样点, {result['duration']:.2f}秒")
         else:
@@ -462,17 +476,18 @@ class BPMAnalyzerWindow(BaseToolWindow):
         if not self.current_file:
             QMessageBox.information(self, "提示", "请先加载音频文件")
             return
-        
+
         self.logger.info("开始BPM分析...")
         self.status_ready.setText("正在分析...")
-        
-        result = self.engine.detect_bpm()
-        
+        self._analyze_worker = _Worker(self.engine.detect_bpm)
+        self._analyze_worker.finished.connect(self._on_analyze_done)
+        self._analyze_worker.start()
+
+    def _on_analyze_done(self, result):
         if result['bpm'] > 0:
             self.bpm_display.set_bpm(result['bpm'], result['confidence'])
             self.logger.info(f"BPM检测结果: {result['bpm']} (置信度: {result['confidence'] * 100:.0f}%)")
-            
-            # 更新波形上的起始点标记
+
             waveform = self.engine.get_waveform_data(4000)
             self.waveform_widget.set_data(
                 waveform,
@@ -480,7 +495,7 @@ class BPMAnalyzerWindow(BaseToolWindow):
                 duration=self.engine.duration,
                 sample_rate=self.engine.sample_rate
             )
-            
+
             self.status_ready.setText(f"BPM: {result['bpm']}")
         else:
             self.bpm_display.set_bpm(0, 0)
@@ -492,22 +507,23 @@ class BPMAnalyzerWindow(BaseToolWindow):
         if not self.current_file:
             QMessageBox.information(self, "提示", "请先加载音频文件")
             return
-        
+
         self.logger.info("计算BPM变化曲线...")
         self.status_ready.setText("正在计算BPM曲线...")
-        
-        result = self.engine.compute_bpm_curve(window_sec=5.0, hop_sec=1.0)
-        
+        self._curve_worker = _Worker(self.engine.compute_bpm_curve, 5.0, 1.0)
+        self._curve_worker.finished.connect(self._on_curve_done)
+        self._curve_worker.start()
+
+    def _on_curve_done(self, result):
         self.bpm_curve_widget.set_data(result['time_axis'], result['bpm_curve'])
-        
-        # 更新统计
+
         stats = self.engine.get_statistics()
         self.stats_labels['平均BPM'].setText(f"{stats['avg']}")
         self.stats_labels['最小BPM'].setText(f"{stats['min']}")
         self.stats_labels['最大BPM'].setText(f"{stats['max']}")
         self.stats_labels['标准差'].setText(f"{stats['std']}")
         self.stats_labels['分析次数'].setText(f"{stats['count']}")
-        
+
         self.status_ready.setText(f"BPM曲线已计算 ({stats['count']}个点)")
         self.logger.info(f"BPM曲线: 平均{stats['avg']}, 范围{stats['min']}-{stats['max']}")
     

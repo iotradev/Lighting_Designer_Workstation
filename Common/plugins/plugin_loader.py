@@ -66,20 +66,25 @@ class PluginLoader:
         return list(self.plugins.values())
 
     def load(self, name: str) -> Optional[object]:
-        """"""
         info = self.plugins.get(name)
         if not info:
             if self.logger:
                 self.logger.error(f": {name}")
             return None
+        if not info.enabled:
+            if self.logger:
+                self.logger.info(f": {name}")
+            return None
         try:
+            if not info.entry.resolve().is_relative_to(info.path.resolve()):
+                raise ValueError("入口文件不在插件目录内")
             spec = importlib.util.spec_from_file_location(
                 f"plugin_{name}", str(info.entry)
             )
             module = importlib.util.module_from_spec(spec)
-            sys.modules[f"plugin_{name}"] = module
             spec.loader.exec_module(module)
             info.module = module
+            sys.modules[f"plugin_{name}"] = module
             if self.logger:
                 self.logger.info(f": {name}")
             return module

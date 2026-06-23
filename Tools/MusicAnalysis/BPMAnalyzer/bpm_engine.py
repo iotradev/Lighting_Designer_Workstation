@@ -4,7 +4,6 @@ BPM检测引擎 v2 - 基于自相关的鲁棒BPM检测
 支持: WAV / MP3 / FLAC / OGG / AAC (via miniaudio)
 """
 import wave
-import struct
 import numpy as np
 from pathlib import Path
 
@@ -304,3 +303,13 @@ class BPMEngine:
             'std': round(float(arr.std()), 1),
             'count': len(arr)
         }
+
+    def export_csv(self, path):
+        import csv
+        from pathlib import Path as P
+        P(path).parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", newline="", encoding="utf-8-sig") as f:
+            writer = csv.writer(f)
+            writer.writerow(["time_sec", "bpm"])
+            for i, bpm in enumerate(self.bpm_history):
+                writer.writerow([f"{i:.1f}", bpm])

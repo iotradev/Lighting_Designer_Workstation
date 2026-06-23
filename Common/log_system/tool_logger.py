@@ -4,7 +4,7 @@
 : Info / Warning / Error / Debug 
 : (QTextEdit) + (Logs/)
 """
-import os, sys
+import sys
 from datetime import datetime
 from pathlib import Path
 from enum import IntEnum
@@ -22,12 +22,7 @@ class LogLevel(IntEnum):
     WARNING = 2
     ERROR = 3
 
-class LogSignal(QObject):
-    """"""
-    message = signal = None  #  Signal
-
-# 
-from PySide6.QtCore import Signal as _Signal
+from PySide6.QtCore import Signal as _Signal
 
 class _LogEmitter(QObject):
     log_message = _Signal(str, str, str)  # level, timestamp, message
@@ -40,7 +35,13 @@ class ToolLogger:
         logger.info("BPM: 120")
         logger.error("")
     """
-    _emitter = _LogEmitter()
+    _emitter = None
+
+    @classmethod
+    def _get_emitter(cls):
+        if cls._emitter is None:
+            cls._emitter = _LogEmitter()
+        return cls._emitter
 
     def __init__(self, tool_name, log_widget=None, file_logging=True):
         self.tool_name = tool_name
@@ -73,9 +74,8 @@ class ToolLogger:
             try:
                 with open(self._log_path, "a", encoding="utf-8") as f:
                     f.write(line + "\n")
-            except IOError:
-                pass
-
+            except IOError:
+                print(f"Failed to write log: {self._log_path}", file=sys.stderr)
         # 
         if self.log_widget and isinstance(self.log_widget, QTextEdit):
             self._append_to_widget(level, ts, msg)
@@ -159,7 +159,7 @@ class LogPanel(QWidget):
         # 
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
-        self.log_text.setFont(QFont("Cascadia Code, Consolas, monospace", 11))
+        self.log_text.setFont(QFont("Consolas", 11))
         self.log_text.setStyleSheet("""
             QTextEdit {
                 background-color: #1e1e1e;

@@ -2,7 +2,7 @@
 """
 
 """
-import os, json, csv, math
+import json, csv, math
 from pathlib import Path
 from datetime import datetime
 
@@ -70,6 +70,8 @@ def rgb_to_hex(r, g, b):
 def hex_to_rgb(hex_color):
     """RGB"""
     h = hex_color.lstrip("#")
+    if len(h) == 3:
+        h = h[0]*2 + h[1]*2 + h[2]*2
     return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
 
 
@@ -80,8 +82,11 @@ def kelvin_to_rgb(kelvin):
         r = 255
         g = max(0, min(255, 99.4708025861 * math.log(temp) - 161.1195681661))
     else:
-        r = max(0, min(255, 329.698727446 * ((temp - 60) ** -0.1332047592)))
-        g = max(0, min(255, 288.1221695283 * ((temp - 60) ** -0.0755148492)))
+        t_minus_60 = temp - 60
+        if t_minus_60 <= 0:
+            t_minus_60 = 0.01
+        r = max(0, min(255, 329.698727446 * (t_minus_60 ** -0.1332047592)))
+        g = max(0, min(255, 288.1221695283 * (t_minus_60 ** -0.0755148492)))
     if temp >= 66:
         b = 255
     elif temp <= 19:

@@ -4,7 +4,7 @@
 JSON Projects/ 
 : 
 """
-import json, os, shutil, time
+import json, shutil
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, List, Dict, Any
@@ -97,9 +97,14 @@ class ProjectManager:
         PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
         BACKUPS_DIR.mkdir(parents=True, exist_ok=True)
 
-    def new_project(self, name: str, author: str = "") -> Project:
-        """"""
-        project_dir = PROJECTS_DIR / name
+    def new_project(self, name: str, author: str = "") -> Project:
+
+        from ..utils.helpers import safe_filename
+        safe_name = safe_filename(name)
+        if not safe_name:
+            raise ValueError("项目名无效")
+
+        project_dir = PROJECTS_DIR / safe_name
         project_dir.mkdir(parents=True, exist_ok=True)
         project = Project()
         project.data["name"] = name
@@ -153,7 +158,11 @@ class ProjectManager:
         # 
         self._cleanup_backups(name)
 
-    def _cleanup_backups(self, project_name, max_backups=50):
+    def _cleanup_backups(self, project_name, max_backups=None):
+
+        if max_backups is None:
+            from ..config import ConfigManager
+            max_backups = ConfigManager().get("max_backups", 50)
         """"""
         backups = sorted(
             [d for d in BACKUPS_DIR.iterdir() if d.is_dir() and d.name.startswith(project_name)],
