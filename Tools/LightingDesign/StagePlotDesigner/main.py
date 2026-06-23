@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
     QToolBar, QSizePolicy, QCheckBox, QScrollArea, QFrame,
     QGraphicsScene, QGraphicsView, QGraphicsItem
 )
-from PySide6.QtCore import Qt, QPointF, QRectF, QSize
+from PySide6.QtCore import Qt, QPointF, QRectF, QSize, Signal
 from PySide6.QtGui import (
     QPen, QBrush, QColor, QFont, QPainter, QTransform,
     QKeySequence, QAction, QPageSize, QPageLayout
@@ -37,6 +37,8 @@ from stage_elements import (
 # ────────────────────────────────────────────
 class StageCanvas(QGraphicsView):
     """舞台画布视图"""
+
+    _zoom_changed = Signal(float)
 
     GRID_SIZE = 50
     ZOOM_FACTOR = 1.15
@@ -96,15 +98,18 @@ class StageCanvas(QGraphicsView):
     def zoom_in(self):
         self.scale(self.ZOOM_FACTOR, self.ZOOM_FACTOR)
         self._zoom_level += 1
+        self._zoom_changed.emit(self.ZOOM_FACTOR ** self._zoom_level)
 
     def zoom_out(self):
         self.scale(1 / self.ZOOM_FACTOR, 1 / self.ZOOM_FACTOR)
         self._zoom_level -= 1
+        self._zoom_changed.emit(self.ZOOM_FACTOR ** self._zoom_level)
 
     def fit_scene(self):
         self.fitInView(self.sceneRect().adjusted(-50, -50, 50, 50),
                        Qt.AspectRatioMode.KeepAspectRatio)
         self._zoom_level = 0
+        self._zoom_changed.emit(1.0)
 
     def wheelEvent(self, event):
         if event.angleDelta().y() > 0:
@@ -123,6 +128,14 @@ class StageCanvas(QGraphicsView):
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
+        # 更新状态栏坐标
+        scene_pos = self.mapToScene(event.position().toPoint())
+        parent = self.parent()
+        while parent and not isinstance(parent, StagePlotDesigner):
+            parent = parent.parent() if hasattr(parent, 'parent') else None
+        if parent and hasattr(parent, 'update_cursor_pos'):
+            parent.update_cursor_pos(scene_pos.x(), scene_pos.y())
+
         if self._pan_active:
             delta = event.position() - self._pan_start
             self._pan_start = event.position()
@@ -362,6 +375,7 @@ class StagePlotDesigner(BaseToolWindow):
         self._current_file = None
         self._setup_ui()
         self._setup_toolbar()
+        self._setup_status_bar()
         self.logger.info("舞台平面图设计器初始化完成")
 
     # ── 中心 UI ──
@@ -440,6 +454,94 @@ class StagePlotDesigner(BaseToolWindow):
         self.toolbar.addAction(action)
         return action
 
+    # ── 状态栏 ──
+    def _setup_status_bar(self):
+        sb = self.statusbar
+        sb.setStyleSheet("""
+            QStatusBar {
+                background: #1a1a2e;
+                border-top: 1px solid #2a2a3e;
+                color: #8888aa;
+                font-size: 12px;
+                padding: 2px 8px;
+            }
+            QStatusBar::item { border: none; }
+            QLabel { background: transparent; padding: 0 6px; }
+        """)
+
+        # 左侧：元素数量
+        self._lbl_elements = QLabel("元素: 0")
+        self._lbl_elements.setStyleSheet("color: #7c7caa; font-size: 12px; background: transparent;")
+        sb.addWidget(self._lbl_elements, 1)
+
+        # 右侧：网格 | 吸附 | 缩放 | 坐标 | 版本
+        sep_style = "color: #3a3a4e; font-size: 12px; background: transparent; padding: 0 2px;"
+
+        self._lbl_snap = QLabel("磁铁 ON")
+        self._lbl_snap.setStyleSheet("color: #4ec9b0; font-size: 12px; background: transparent;")
+        sb.addPermanentWidget(self._lbl_snap)
+
+        sep1 = QLabel("|")
+        sep1.setStyleSheet(sep_style)
+        sb.addPermanentWidget(sep1)
+
+        self._lbl_grid = QLabel("▦ 网格")
+        self._lbl_grid.setStyleSheet("color: #4ec9b0; font-size: 12px; background: transparent;")
+        sb.addPermanentWidget(self._lbl_grid)
+
+        sep2 = QLabel("|")
+        sep2.setStyleSheet(sep_style)
+        sb.addPermanentWidget(sep2)
+
+        self._lbl_zoom = QLabel("100%")
+        self._lbl_zoom.setStyleSheet("color: #e8912d; font-size: 12px; font-weight: bold; background: transparent;")
+        sb.addPermanentWidget(self._lbl_zoom)
+
+        sep3 = QLabel("|")
+        sep3.setStyleSheet(sep_style)
+        sb.addPermanentWidget(sep3)
+
+        self._lbl_cursor = QLabel("X: 0  Y: 0")
+        self._lbl_cursor.setStyleSheet("color: #8888aa; font-size: 12px; background: transparent;")
+        self._lbl_cursor.setFixedWidth(130)
+        sb.addPermanentWidget(self._lbl_cursor)
+
+        sep4 = QLabel("|")
+        sep4.setStyleSheet(sep_style)
+        sb.addPermanentWidget(sep4)
+
+        self._lbl_version = QLabel(f"v{self.VERSION}")
+        self._lbl_version.setStyleSheet("color: #555577; font-size: 11px; background: transparent;")
+        sb.addPermanentWidget(self._lbl_version)
+
+        # 连接信号更新状态
+        self.scene.changed.connect(self._update_element_count)
+        self.view._zoom_changed.connect(self._update_zoom_label)
+
+    def _update_element_count(self):
+        count = sum(1 for item in self.scene.items() if isinstance(item, BaseStageElement))
+        self._lbl_elements.setText(f"元素: {count}")
+
+    def _update_zoom_label(self, zoom):
+        self._lbl_zoom.setText(f"{int(zoom * 100)}%")
+
+    def update_cursor_pos(self, x, y):
+        self._lbl_cursor.setText(f"X: {int(x)}  Y: {int(y)}")
+
+    def _toggle_grid(self):
+        self.view._show_grid = not self.view._show_grid
+        self._lbl_grid.setStyleSheet(
+            f"color: {'#4ec9b0' if self.view._show_grid else '#555'}; font-size: 12px; background: transparent;"
+        )
+        self.view.viewport().update()
+
+    def _toggle_snap(self):
+        self.view._snap_enabled = not self.view._snap_enabled
+        self._lbl_snap.setText("磁铁 ON" if self.view._snap_enabled else "磁铁 OFF")
+        self._lbl_snap.setStyleSheet(
+            f"color: {'#4ec9b0' if self.view._snap_enabled else '#555'}; font-size: 12px; background: transparent;"
+        )
+
     # ── 元素管理 ──
     def add_element_to_scene(self, etype):
         """从面板添加元素到场景中心"""
@@ -512,14 +614,6 @@ class StagePlotDesigner(BaseToolWindow):
             self.view.zoom_out()
         else:
             super().keyPressEvent(event)
-
-    # ── 网格/吸附切换 ──
-    def _toggle_grid(self):
-        self.view._show_grid = not self.view._show_grid
-        self.view.viewport().update()
-
-    def _toggle_snap(self):
-        self.view._snap_enabled = not self.view._snap_enabled
 
     # ── 导出 PNG ──
     def _export_png(self):
