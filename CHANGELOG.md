@@ -1,27 +1,37 @@
 # Changelog
 
-All notable changes to Lighting Designer Workstation will be documented in this file.
+## v2.0.0 (2026-06-23)
 
-## [1.0.0] - 2026-06-22
+### 启动器 (launcher.py)
+- 侧栏抽屉化：Ctrl+B 切换展开/收起，只显示图标
+- 侧栏分类过滤：点击分类只显示该分类，再点恢复全部
+- 底部栏从蓝色改为深色主题
+- 工具栏默认隐藏（菜单栏已有功能）
+- 卡片等高显示，统一字号
+- 全局样式表优化（间距、圆角、颜色）
 
-### Added
-- Phase 1: 完整基础框架 (Common/)
-  - GrandMA3 风格深色主题系统 (dark.json / light.json)
-  - 统一主窗口基类 (BaseToolWindow)
-    - 菜单栏、工具栏、状态栏、日志窗口、项目管理器
-    - 窗口布局记忆、自动保存、拖放支持
-  - 项目管理系统 (JSON格式)
-  - 统一日志系统 (文件+窗口输出)
-  - 配置管理系统 (settings.json)
-  - 通用UI组件库 (DMX滑条、LED表、通道网格、颜色色块、搜索框等)
-  - 插件加载框架
-- Phase 2: 核心MVP工具
-  - BPMAnalyzer - BPM自动检测与实时分析
-  - MIDIMonitor - MIDI监听与日志
-  - MIDISender - MIDI发送与控制面板
-  - DMXCalculator - DMX地址/通道/Universe计算
-  - FixtureLibrary - 灯具数据库管理
-  - StagePlotDesigner - 灯位图绘制
-- 一键打包脚本 (build_all.bat / build_all.ps1)
-- 工具启动器
-- 根目录 README.md
+### 时间码生成器 (TimecodeGenerator)
+- 布局重构：上下排列，每行不拥挤
+- SpinBox 宽度优化，箭头样式修复
+- 音频播放修复：generator prime + 按需返回 framecount
+- 播放进度条：可拖动 seek，实时时间显示
+- MTC 日志改为终端风格彩色 HTML 显示
+- 支持音频 + MTC 同时运行
+
+### 全局样式 (stylesheet.py)
+- SpinBox 上下箭头样式：明确按钮区域、hover 效果
+- 状态栏从蓝色改为深色
+- 所有控件间距优化
+- 滚动条更细 (12px → 10px)
+
+### 主题 (Config/Themes/dark.json)
+- 背景色统一为 #18181b
+- 边框色统一为 #2a2a2d
+- 输入框背景统一为 #222225
+- 状态栏背景改为 #1a1a1d
+
+### 项目清理
+- 删除 53 个 __pycache__ 目录
+- 删除构建文件、测试文件、旧安装包
+- Releases/ 清空
+- 项目大小 284MB → 32MB

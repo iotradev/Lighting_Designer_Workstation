@@ -270,23 +270,24 @@ class BaseToolWindow(QMainWindow):
 
     def _init_toolbar(self):
 
-        """"""
+        """初始化工具栏（默认隐藏，减少视觉占用）"""
 
         self.toolbar = QToolBar("常用工具")
 
         self.toolbar.setMovable(False)
 
-        self.toolbar.setIconSize(QSize(24, 24))
+        self.toolbar.setIconSize(QSize(16, 16))
 
         self.addToolBar(self.toolbar)
-
-
 
         self.toolbar.addAction("新建", self._on_new_project)
 
         self.toolbar.addAction("打开", self._on_open_project)
 
         self.toolbar.addAction("保存", self._on_save_project)
+
+        # 默认隐藏工具栏（菜单栏已有这些功能）
+        self.toolbar.setVisible(False)
 
         self.toolbar.addSeparator()
 

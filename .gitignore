@@ -22,15 +22,11 @@ env/
 .idea/
 *.swp
 
-# Releases
-Releases/
-
 # Logs
 Logs/*.log
 
-# Backups (keep structure, ignore contents)
-Backups/*/
-!Backups/.gitkeep
+# Releases
+Releases/
 
 # Temp
 *.tmp
@@ -40,3 +36,9 @@ Thumbs.db
 # Installer binaries
 python-installer.exe
 *.exe
+
+# Pytest
+.pytest_cache/
+
+# MiMoCode
+.mimocode/

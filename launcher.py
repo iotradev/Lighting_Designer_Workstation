@@ -307,8 +307,8 @@ class ToolButton(QPushButton):
         self.setText(f"  {name}")
         self.setToolTip(desc)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setFixedHeight(46)
-        self.setMinimumWidth(180)
+        self.setFixedHeight(38)
+        self.setMinimumWidth(160)
         self.setStyleSheet(f"""
             QPushButton {{
                 background: #2a2a2d;
@@ -317,7 +317,7 @@ class ToolButton(QPushButton):
                 border-left: 3px solid transparent;
                 border-radius: 4px;
                 padding: 6px 12px;
-                font-size: 16px;
+                font-size: 13px;
                 text-align: left;
             }}
             QPushButton:hover {{
@@ -342,27 +342,27 @@ class CategoryCard(QFrame):
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                     stop:0 #252528, stop:1 #1e1e21);
                 border: 1px solid #333;
-                border-radius: 10px;
+                border-radius: 8px;
                 border-top: 3px solid {self.color};
             }}
         """)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(14, 12, 14, 12)
-        layout.setSpacing(6)
+        layout.setContentsMargins(12, 10, 12, 10)
+        layout.setSpacing(4)
 
         hdr = QHBoxLayout()
         icon = QLabel(category["icon"])
-        icon.setFont(QFont("Segoe UI Emoji", 16))
-        icon.setFixedSize(28, 28)
+        icon.setFont(QFont("Segoe UI Emoji", 14))
+        icon.setFixedSize(24, 24)
         icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         hdr.addWidget(icon)
         name = QLabel(category["name"])
-        name.setFont(QFont("Microsoft YaHei UI", 13, QFont.Weight.Bold))
+        name.setFont(QFont("Microsoft YaHei UI", 12, QFont.Weight.Bold))
         name.setStyleSheet(f"color: {self.color}; background: transparent; border: none;")
         hdr.addWidget(name)
         hdr.addStretch()
         cnt = QLabel(f"{len(category['tools'])}")
-        cnt.setStyleSheet(f"color: {self.color}88; font-size: 22px; font-weight: bold; background: transparent; border: none;")
+        cnt.setStyleSheet(f"color: {self.color}66; font-size: 18px; font-weight: bold; background: transparent; border: none;")
         hdr.addWidget(cnt)
         layout.addLayout(hdr)
 
@@ -372,12 +372,17 @@ class CategoryCard(QFrame):
         layout.addWidget(sep)
 
         grid = QGridLayout()
-        grid.setSpacing(4)
+        grid.setSpacing(3)
         for i, (name, exe, desc, folder) in enumerate(category["tools"]):
             btn = ToolButton(name, desc, self.color)
             btn.clicked.connect(lambda _, f=folder, e=exe: self._launch(f, e))
             grid.addWidget(btn, i // 2, i % 2)
         layout.addLayout(grid)
+
+        # 统一卡片最小高度 (header 30 + separator 6 + 3行按钮 * 41 + padding 20)
+        rows_needed = (len(category["tools"]) + 1) // 2
+        min_h = 30 + 6 + rows_needed * 41 + 20
+        self.setMinimumHeight(min_h)
 
     def _launch(self, folder, exe):
         script = BASE_DIR / "Tools" / folder / exe / "main.py"
@@ -452,55 +457,76 @@ class LauncherWindow(QMainWindow):
         content.setSpacing(0)
 
         # 侧栏
-        sidebar = QFrame()
-        sidebar.setFixedWidth(180)
-        sidebar.setStyleSheet("background: #1a1a1d; border-right: 1px solid #2a2a2d;")
-        sb_layout = QVBoxLayout(sidebar)
-        sb_layout.setContentsMargins(8, 12, 8, 12)
-        sb_layout.setSpacing(3)
+        self._sidebar_expanded = True
+        self.sidebar = QFrame()
+        self.sidebar.setFixedWidth(180)
+        self.sidebar.setStyleSheet("background: #1a1a1d; border-right: 1px solid #2a2a2d;")
+        sb_layout = QVBoxLayout(self.sidebar)
+        sb_layout.setContentsMargins(6, 8, 6, 8)
+        sb_layout.setSpacing(2)
 
+        # 搜索框
         self.search_box = QLineEdit()
         self.search_box.setPlaceholderText("搜索 ...")
-        self.search_box.setFixedHeight(36)
+        self.search_box.setFixedHeight(30)
         self.search_box.setStyleSheet("""
             QLineEdit {
                 background: #222; color: #ccc; border: 1px solid #333;
-                border-radius: 6px; padding: 4px 10px; font-size: 15px;
+                border-radius: 5px; padding: 3px 8px; font-size: 12px;
             }
             QLineEdit:focus { border-color: #e8912d66; }
         """)
         self.search_box.textChanged.connect(self._on_search)
         self.search_box.returnPressed.connect(self._on_search_enter)
         sb_layout.addWidget(self.search_box)
-        sb_layout.addSpacing(8)
+        sb_layout.addSpacing(4)
 
+        # "全部" 按钮
+        self._all_btn = QPushButton(" ◉  全部工具")
+        self._all_btn.setFixedHeight(34)
+        self._all_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._all_btn.setStyleSheet("""
+            QPushButton {
+                background: #e8912d22; color: #e8912d;
+                border: 1px solid #e8912d44; border-left: 3px solid #e8912d;
+                border-radius: 4px; padding: 4px 10px; font-size: 12px;
+                font-weight: bold; text-align: left;
+            }
+            QPushButton:hover { background: #e8912d33; }
+        """)
+        self._all_btn.clicked.connect(lambda: self._filter_category(-1))
+        sb_layout.addWidget(self._all_btn)
+
+        self._active_cat = -1  # -1 = 全部
         self.cat_buttons = []
+        self._cat_data = []  # 存储分类数据供折叠时用
         for i, cat in enumerate(CATEGORIES):
             btn = QPushButton(f" {cat['icon']}  {cat['name']}")
-            btn.setFixedHeight(46)
+            btn.setFixedHeight(34)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
             btn.setStyleSheet(self._cat_style(cat["color"], False))
-            btn.clicked.connect(lambda _, idx=i: self._scroll_to_category(idx))
+            btn.clicked.connect(lambda _, idx=i: self._filter_category(idx))
             sb_layout.addWidget(btn)
             self.cat_buttons.append(btn)
+            self._cat_data.append(cat)
 
         sb_layout.addStretch()
 
-        for text, slot in [("📂 打开项目", self._open_projects), ("📁 打开目录", self._open_base)]:
-            btn = QPushButton(text)
-            btn.setFixedHeight(30)
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.setStyleSheet("""
-                QPushButton {
-                    background: transparent; color: #666; border: none;
-                    font-size: 15px; text-align: left; padding: 4px 8px;
-                }
-                QPushButton:hover { color: #aaa; }
-            """)
-            btn.clicked.connect(slot)
-            sb_layout.addWidget(btn)
+        # 折叠/展开按钮
+        self._toggle_btn = QPushButton("◀")
+        self._toggle_btn.setFixedSize(30, 30)
+        self._toggle_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._toggle_btn.setStyleSheet("""
+            QPushButton {
+                background: transparent; color: #555; border: none;
+                font-size: 14px; border-radius: 4px;
+            }
+            QPushButton:hover { background: #333; color: #aaa; }
+        """)
+        self._toggle_btn.clicked.connect(self._toggle_sidebar)
+        sb_layout.addWidget(self._toggle_btn, 0, Qt.AlignmentFlag.AlignBottom)
 
-        content.addWidget(sidebar)
+        content.addWidget(self.sidebar)
 
         # 右侧内容
         right = QVBoxLayout()
@@ -510,12 +536,12 @@ class LauncherWindow(QMainWindow):
         # 最近使用栏
         self.recent_bar = QFrame()
         self.recent_bar.setStyleSheet("background: #1e1e21; border-bottom: 1px solid #2a2a2d;")
-        self.recent_bar.setFixedHeight(40)
+        self.recent_bar.setFixedHeight(36)
         rb_layout = QHBoxLayout(self.recent_bar)
         rb_layout.setContentsMargins(16, 0, 16, 0)
         rb_layout.setSpacing(6)
         lbl = QLabel("⏱ 最近使用")
-        lbl.setStyleSheet("color: #666; font-size: 15px; background: transparent;")
+        lbl.setStyleSheet("color: #555; font-size: 12px; background: transparent;")
         rb_layout.addWidget(lbl)
         self.recent_btns_widget = QWidget()
         self.recent_btns_layout = QHBoxLayout(self.recent_btns_widget)
@@ -532,8 +558,8 @@ class LauncherWindow(QMainWindow):
 
         scroll_content = QWidget()
         self.grid = QGridLayout(scroll_content)
-        self.grid.setContentsMargins(16, 12, 16, 12)
-        self.grid.setSpacing(12)
+        self.grid.setContentsMargins(12, 10, 12, 10)
+        self.grid.setSpacing(10)
 
         self.cards = []
         for i, cat in enumerate(CATEGORIES):
@@ -553,24 +579,24 @@ class LauncherWindow(QMainWindow):
         # 底部状态栏
         footer = QFrame()
         footer.setFixedHeight(30)
-        footer.setStyleSheet("background: #007acc; border-top: 1px solid #005a9e;")
+        footer.setStyleSheet("background: #1a1a1d; border-top: 1px solid #2a2a2d;")
         fl = QHBoxLayout(footer)
         fl.setContentsMargins(12, 0, 12, 0)
         ver_label = QLabel(f"v{APP_VERSION}")
-        ver_label.setStyleSheet("color:#fff; font-size:10px; background:transparent;")
+        ver_label.setStyleSheet("color:#666; font-size:11px; background:transparent;")
         fl.addWidget(ver_label)
         fl.addStretch()
         if PYTHON_EXE:
             py_name = Path(PYTHON_EXE).name
-            py_status = QLabel(f"🐍 {py_name}")
-            py_status.setStyleSheet("color: #4ec9b0; font-size: 16px; background: transparent;")
+            py_status = QLabel(f"Python: {py_name}")
+            py_status.setStyleSheet("color: #4ec9b0; font-size: 11px; background: transparent;")
         else:
-            py_status = QLabel("⚠️未安装Python")
-            py_status.setStyleSheet("color: #ff6b6b; font-size: 16px; background: transparent;")
+            py_status = QLabel("⚠ 未安装Python")
+            py_status.setStyleSheet("color: #ff6b6b; font-size: 11px; background: transparent;")
         fl.addWidget(py_status)
         fl.addSpacing(12)
-        hint = QLabel("Ctrl+K 搜索 · Ctrl+Q 退出")
-        hint.setStyleSheet("color: #ffffffaa; font-size: 16px; background: transparent;")
+        hint = QLabel("Ctrl+K 搜索 · Ctrl+B 抽屉 · Ctrl+Q 退出")
+        hint.setStyleSheet("color: #555; font-size: 11px; background: transparent;")
         fl.addWidget(hint)
         right.addWidget(footer)
 
@@ -582,6 +608,7 @@ class LauncherWindow(QMainWindow):
         QShortcut(QKeySequence("Ctrl+K"), self, lambda: self.search_box.setFocus())
         QShortcut(QKeySequence("Escape"), self, self._clear_search)
         QShortcut(QKeySequence("Ctrl+Q"), self, self.close)
+        QShortcut(QKeySequence("Ctrl+B"), self, self._toggle_sidebar)
 
         self._update_recent()
 
@@ -612,7 +639,7 @@ class LauncherWindow(QMainWindow):
                 QPushButton {{
                     background: {color}22; color: {color};
                     border: 1px solid {color}44; border-left: 3px solid {color};
-                    border-radius: 4px; padding: 8px 12px; font-size: 16px;
+                    border-radius: 4px; padding: 6px 12px; font-size: 13px;
                     font-weight: bold; text-align: left;
                 }}
             """
@@ -620,7 +647,7 @@ class LauncherWindow(QMainWindow):
             QPushButton {{
                 background: transparent; color: #aaa;
                 border: 1px solid transparent; border-left: 3px solid transparent;
-                border-radius: 4px; padding: 8px 12px; font-size: 16px; text-align: left;
+                border-radius: 4px; padding: 6px 12px; font-size: 13px; text-align: left;
             }}
             QPushButton:hover {{
                 background: {color}11; color: {color};
@@ -628,19 +655,70 @@ class LauncherWindow(QMainWindow):
             }}
         """
 
-    def _scroll_to_category(self, idx):
-        if 0 <= idx < len(self.cards):
-            card = self.cards[idx]
-            self.grid.parent().parent().ensureWidgetVisible(card)
+    def _toggle_sidebar(self):
+        """切换侧栏抽屉：展开/收起"""
+        self._sidebar_expanded = not self._sidebar_expanded
+        if self._sidebar_expanded:
+            self.sidebar.setFixedWidth(180)
+            self._toggle_btn.setText("◀")
+            self._toggle_btn.setToolTip("收起侧栏 (Ctrl+B)")
+            self.search_box.show()
+            self._all_btn.setText(" ◉  全部工具")
             for i, btn in enumerate(self.cat_buttons):
-                cat = CATEGORIES[i]
-                btn.setStyleSheet(self._cat_style(cat["color"], i == idx))
+                cat = self._cat_data[i]
+                btn.setText(f" {cat['icon']}  {cat['name']}")
+                btn.setToolTip("")
+        else:
+            self.sidebar.setFixedWidth(50)
+            self._toggle_btn.setText("▶")
+            self._toggle_btn.setToolTip("展开侧栏 (Ctrl+B)")
+            self.search_box.hide()
+            self._all_btn.setText("◉")
+            for i, btn in enumerate(self.cat_buttons):
+                cat = self._cat_data[i]
+                btn.setText(f"{cat['icon']}")
+                btn.setToolTip(cat['name'])
+
+    def _filter_category(self, idx):
+        """过滤分类: -1=全部, 0-7=指定分类"""
+        # 再次点击同一分类 = 恢复全部
+        if self._active_cat == idx:
+            idx = -1
+        self._active_cat = idx
+
+        # 更新侧栏按钮高亮
+        is_all = (idx == -1)
+        self._all_btn.setStyleSheet("""
+            QPushButton {
+                background: """ + ("#e8912d22" if is_all else "transparent") + """;
+                color: """ + ("#e8912d" if is_all else "#666") + """;
+                border: 1px solid """ + ("#e8912d44" if is_all else "transparent") + """;
+                border-left: 3px solid """ + ("#e8912d" if is_all else "transparent") + """;
+                border-radius: 4px; padding: 6px 12px; font-size: 13px;
+                font-weight: bold; text-align: left;
+            }
+            QPushButton:hover { background: #e8912d11; color: #e8912d; }
+        """)
+        for i, btn in enumerate(self.cat_buttons):
+            cat = CATEGORIES[i]
+            btn.setStyleSheet(self._cat_style(cat["color"], i == idx))
+
+        # 显示/隐藏卡片
+        for i, card in enumerate(self.cards):
+            card.setVisible(idx == -1 or i == idx)
 
     def _on_search(self, text):
         text = text.lower().strip()
+        # 搜索时重置分类过滤
+        if text:
+            self._active_cat = -1
+            for btn in self.cat_buttons:
+                cat = CATEGORIES[self.cat_buttons.index(btn)]
+                btn.setStyleSheet(self._cat_style(cat["color"], False))
         for card in self.cards:
             if not text:
-                card.show()
+                # 恢复分类过滤状态
+                card.setVisible(self._active_cat == -1 or self.cards.index(card) == self._active_cat)
                 continue
             visible = False
             for btn in card.findChildren(ToolButton):
@@ -661,8 +739,7 @@ class LauncherWindow(QMainWindow):
 
     def _clear_search(self):
         self.search_box.clear()
-        for card in self.cards:
-            card.show()
+        self._filter_category(-1)
 
     def _launch_tool(self, name, exe, desc, folder):
         script = BASE_DIR / "Tools" / folder / exe / "main.py"
@@ -711,7 +788,7 @@ class LauncherWindow(QMainWindow):
                     QPushButton {{
                         background: {info["color"]}22; color: {info["color"]};
                         border: 1px solid {info["color"]}44; border-radius: 3px;
-                        padding: 2px 8px; font-size: 16px;
+                        padding: 2px 8px; font-size: 12px;
                     }}
                     QPushButton:hover {{ background: {info["color"]}44; }}
                 """)
@@ -760,10 +837,6 @@ def main():
     palette.setColor(QPalette.ColorRole.Highlight, QColor("#e8912d"))
     palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#ffffff"))
     app.setPalette(palette)
-
-    qss_path = BASE_DIR / "Common" / "themes" / "launcher.qss"
-    if qss_path.exists():
-        app.setStyleSheet(qss_path.read_text(encoding="utf-8"))
 
     missing = []
     try:

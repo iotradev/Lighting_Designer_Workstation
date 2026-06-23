@@ -15,7 +15,8 @@ from ui.base_window import BaseToolWindow
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QComboBox, QSpinBox, QGroupBox, QTableWidget, QTableWidgetItem,
-    QHeaderView, QFileDialog, QFrame, QGridLayout, QMessageBox, QCheckBox
+    QHeaderView, QFileDialog, QFrame, QGridLayout, QMessageBox, QCheckBox,
+    QSlider
 )
 from PySide6.QtCore import Qt, QTimer, Signal, QObject
 from PySide6.QtGui import QFont, QColor
@@ -58,12 +59,13 @@ class TimecodeDisplay(QFrame):
         super().__init__(parent)
         self.setFrameStyle(QFrame.Box | QFrame.Raised)
         self.setLineWidth(2)
-        self.setMinimumHeight(80)
+        self.setFixedHeight(56)
         self._text = "00:00:00:00"
 
         layout = QHBoxLayout(self)
+        layout.setContentsMargins(4, 0, 4, 0)
         self._label = QLabel(self._text)
-        font = QFont("Consolas", 42, QFont.Bold)
+        font = QFont("Consolas", 32, QFont.Bold)
         self._label.setFont(font)
         self._label.setAlignment(Qt.AlignCenter)
         self._label.setStyleSheet("color: #00FF00; background-color: #1a1a1a;")
@@ -78,7 +80,7 @@ class TimecodeGenerator(BaseToolWindow):
     """时间码生成器 v2 - MIDI输出 + 音频播放"""
 
     def __init__(self):
-        super().__init__('TimecodeGenerator', '时间码生成器', '2.0.0', 1100, 750)
+        super().__init__('TimecodeGenerator', '时间码生成器', '2.0.0', 1100, 720)
 
         self._running = False
         self._fps = 25
@@ -100,6 +102,9 @@ class TimecodeGenerator(BaseToolWindow):
         self._audio_sample_rate = 0
         self._audio_playing = False
         self._audio_stream = None
+        self._audio_position = 0  # 当前播放位置(bytes)
+        self._audio_total = 0    # 总长度(bytes)
+        self._audio_seek_to = -1 # 拖动 seek 位置, -1=不seek
 
         # 定时器
         self._timer = QTimer(self)
@@ -112,128 +117,180 @@ class TimecodeGenerator(BaseToolWindow):
     def _build_ui(self):
         central = QWidget()
         self.set_central_content(central)
-        layout = QVBoxLayout(central)
-        layout.setSpacing(8)
-        layout.setContentsMargins(8, 8, 8, 8)
+        root = QVBoxLayout(central)
+        root.setSpacing(6)
+        root.setContentsMargins(8, 6, 8, 6)
 
-        # ── 时间码显示 ──
+        # ── 时间码大显示 ──
         self._tc_display = TimecodeDisplay()
-        layout.addWidget(self._tc_display)
+        root.addWidget(self._tc_display)
 
-        # ── 第一行: MIDI + 预设/帧率/速度 ──
-        top_row = QHBoxLayout()
+        # ── 设置时间码 ──
+        tc_row = QHBoxLayout()
+        tc_row.setSpacing(6)
+        tc_row.addWidget(QLabel("设置时间码:"))
+        self._set_h = QSpinBox(); self._set_h.setRange(0, 23); self._set_h.setPrefix("时 "); self._set_h.setFixedWidth(90)
+        self._set_m = QSpinBox(); self._set_m.setRange(0, 59); self._set_m.setPrefix("分 "); self._set_m.setFixedWidth(90)
+        self._set_s = QSpinBox(); self._set_s.setRange(0, 59); self._set_s.setPrefix("秒 "); self._set_s.setFixedWidth(90)
+        self._set_f = QSpinBox(); self._set_f.setRange(0, 29); self._set_f.setPrefix("帧 "); self._set_f.setFixedWidth(90)
+        for w in [self._set_h, self._set_m, self._set_s, self._set_f]:
+            tc_row.addWidget(w)
+        set_btn = QPushButton("设置")
+        set_btn.clicked.connect(self._on_set_timecode)
+        tc_row.addWidget(set_btn)
+        tc_row.addStretch()
+        root.addLayout(tc_row)
 
-        # MIDI输出 (左侧，占更多空间)
-        midi_group = QGroupBox("MIDI 输出")
-        midi_layout = QVBoxLayout(midi_group)
-        midi_row1 = QHBoxLayout()
-        midi_row1.addWidget(QLabel("端口:"))
+        # ── MIDI控制 ──
+        midi_row = QHBoxLayout()
+        midi_row.setSpacing(6)
+        midi_row.addWidget(QLabel("MIDI端口:"))
         self._midi_combo = QComboBox()
-        self._midi_combo.setMinimumWidth(180)
-        midi_row1.addWidget(self._midi_combo, 1)
+        self._midi_combo.setMinimumWidth(200)
+        midi_row.addWidget(self._midi_combo, 1)
         self._midi_refresh_btn = QPushButton("刷新")
-        self._midi_refresh_btn.setFixedWidth(50)
         self._midi_refresh_btn.clicked.connect(self._refresh_midi_ports)
-        midi_row1.addWidget(self._midi_refresh_btn)
+        midi_row.addWidget(self._midi_refresh_btn)
         self._midi_connect_btn = QPushButton("连接")
-        self._midi_connect_btn.setFixedWidth(60)
         self._midi_connect_btn.clicked.connect(self._toggle_midi)
-        midi_row1.addWidget(self._midi_connect_btn)
-        midi_layout.addLayout(midi_row1)
+        midi_row.addWidget(self._midi_connect_btn)
         self._midi_status = QLabel("未连接")
-        self._midi_status.setStyleSheet("color: #888;")
-        midi_layout.addWidget(self._midi_status)
+        self._midi_status.setStyleSheet("color: #666;")
+        midi_row.addWidget(self._midi_status)
         self._mtc_check = QCheckBox("发送MTC")
         self._mtc_check.setChecked(True)
         self._mtc_check.toggled.connect(lambda v: setattr(self, '_send_mtc', v))
-        midi_layout.addWidget(self._mtc_check)
-        top_row.addWidget(midi_group, 2)
+        midi_row.addWidget(self._mtc_check)
+        midi_row.addStretch()
+        root.addLayout(midi_row)
 
-        # 右侧: 预设 + 帧率 + 速度 (紧凑网格)
-        right_grid = QGridLayout()
-        right_grid.addWidget(QLabel("预设:"), 0, 0)
+        # ── 参数 ──
+        param_row = QHBoxLayout()
+        param_row.setSpacing(8)
+        param_row.addWidget(QLabel("预设:"))
         self._preset_combo = QComboBox()
         self._preset_combo.addItems(PRESETS.keys())
         self._preset_combo.currentTextChanged.connect(self._on_preset)
-        right_grid.addWidget(self._preset_combo, 0, 1)
-        right_grid.addWidget(QLabel("帧率:"), 1, 0)
+        param_row.addWidget(self._preset_combo)
+        param_row.addSpacing(12)
+        param_row.addWidget(QLabel("帧率:"))
         self._fps_combo = QComboBox()
         self._fps_combo.addItems(["24", "25", "30"])
         self._fps_combo.setCurrentText("25")
         self._fps_combo.currentTextChanged.connect(self._on_fps_changed)
-        right_grid.addWidget(self._fps_combo, 1, 1)
-        right_grid.addWidget(QLabel("速度:"), 2, 0)
-        speed_row = QHBoxLayout()
+        self._fps_combo.setFixedWidth(55)
+        param_row.addWidget(self._fps_combo)
+        param_row.addSpacing(12)
+        param_row.addWidget(QLabel("速度:"))
         for label, mult in [("0.5x", 0.5), ("1x", 1.0), ("2x", 2.0)]:
             btn = QPushButton(label)
             btn.setCheckable(True)
             btn.setChecked(mult == 1.0)
+            btn.setFixedWidth(45)
             btn.clicked.connect(lambda checked, m=mult: self._set_speed(m))
-            speed_row.addWidget(btn)
-        right_grid.addLayout(speed_row, 2, 1)
-        top_row.addLayout(right_grid, 1)
-        layout.addLayout(top_row)
+            param_row.addWidget(btn)
+        param_row.addStretch()
+        root.addLayout(param_row)
 
-        # ── 设置时间码 (独立一行，紧凑) ──
-        set_row = QHBoxLayout()
-        set_row.addWidget(QLabel("设置时间码:"))
-        self._set_h = QSpinBox(); self._set_h.setRange(0, 23); self._set_h.setPrefix("时 "); self._set_h.setFixedWidth(70)
-        self._set_m = QSpinBox(); self._set_m.setRange(0, 59); self._set_m.setPrefix("分 "); self._set_m.setFixedWidth(70)
-        self._set_s = QSpinBox(); self._set_s.setRange(0, 59); self._set_s.setPrefix("秒 "); self._set_s.setFixedWidth(70)
-        self._set_f = QSpinBox(); self._set_f.setRange(0, 29); self._set_f.setPrefix("帧 "); self._set_f.setFixedWidth(70)
-        set_row.addWidget(self._set_h)
-        set_row.addWidget(self._set_m)
-        set_row.addWidget(self._set_s)
-        set_row.addWidget(self._set_f)
-        set_btn = QPushButton("设置")
-        set_btn.clicked.connect(self._on_set_timecode)
-        set_row.addWidget(set_btn)
-        set_row.addStretch()
-        layout.addLayout(set_row)
-
-        # ── 音频 + 操作按钮 (同一行) ──
-        action_row = QHBoxLayout()
+        # ── 音频 + 进度条 ──
+        audio_row = QHBoxLayout()
+        audio_row.setSpacing(6)
         self._audio_btn = QPushButton("📂 导入音频")
         self._audio_btn.clicked.connect(self._on_import_audio)
-        action_row.addWidget(self._audio_btn)
+        audio_row.addWidget(self._audio_btn)
         self._audio_label = QLabel("未导入音频")
-        self._audio_label.setStyleSheet("color: #888;")
-        action_row.addWidget(self._audio_label, 1)
+        self._audio_label.setStyleSheet("color: #666;")
+        audio_row.addWidget(self._audio_label, 1)
         self._audio_play_btn = QPushButton("▶ 播放")
         self._audio_play_btn.setEnabled(False)
         self._audio_play_btn.clicked.connect(self._on_toggle_audio)
-        action_row.addWidget(self._audio_play_btn)
+        audio_row.addWidget(self._audio_play_btn)
         self._audio_stop_btn = QPushButton("⏹ 停止")
         self._audio_stop_btn.setEnabled(False)
         self._audio_stop_btn.clicked.connect(self._on_stop_audio)
-        action_row.addWidget(self._audio_stop_btn)
-        action_row.addSpacing(16)
-        self._start_btn = QPushButton("▶ 开始发送")
-        self._start_btn.setStyleSheet("font-size: 14px; padding: 6px 16px; font-weight: bold;")
+        audio_row.addWidget(self._audio_stop_btn)
+        root.addLayout(audio_row)
+
+        # 进度条
+        progress_row = QHBoxLayout()
+        progress_row.setSpacing(6)
+        self._progress_slider = QSlider(Qt.Orientation.Horizontal)
+        self._progress_slider.setRange(0, 1000)
+        self._progress_slider.setValue(0)
+        self._progress_slider.setEnabled(False)
+        self._progress_slider.sliderPressed.connect(self._on_slider_pressed)
+        self._progress_slider.sliderReleased.connect(self._on_slider_released)
+        self._progress_slider.sliderMoved.connect(self._on_slider_moved)
+        progress_row.addWidget(self._progress_slider, 1)
+        self._progress_time = QLabel("00:00 / 00:00")
+        self._progress_time.setStyleSheet("color: #888; font-size: 11px;")
+        self._progress_time.setFixedWidth(90)
+        progress_row.addWidget(self._progress_time)
+        root.addLayout(progress_row)
+
+        # 进度更新定时器
+        self._progress_timer = QTimer(self)
+        self._progress_timer.setInterval(100)
+        self._progress_timer.timeout.connect(self._update_progress)
+
+        # ── 操作按钮 ──
+        act_row = QHBoxLayout()
+        act_row.setSpacing(6)
+        self._start_btn = QPushButton("▶ 发送MTC")
+        self._start_btn.setStyleSheet("font-weight: bold; background: #2a6e2a;")
         self._start_btn.clicked.connect(self._on_start)
-        action_row.addWidget(self._start_btn)
+        act_row.addWidget(self._start_btn)
         self._stop_btn = QPushButton("⏹ 停止")
-        self._stop_btn.setStyleSheet("font-size: 14px; padding: 6px 16px;")
+        self._stop_btn.setStyleSheet("background: #6e2a2a;")
         self._stop_btn.clicked.connect(self._on_stop)
         self._stop_btn.setEnabled(False)
-        action_row.addWidget(self._stop_btn)
+        act_row.addWidget(self._stop_btn)
         self._reset_btn = QPushButton("↺ 重置")
-        self._reset_btn.setStyleSheet("font-size: 14px; padding: 6px 16px;")
         self._reset_btn.clicked.connect(self._on_reset)
-        action_row.addWidget(self._reset_btn)
+        act_row.addWidget(self._reset_btn)
         export_btn = QPushButton("💾 导出CSV")
         export_btn.clicked.connect(self._on_export)
-        action_row.addWidget(export_btn)
-        layout.addLayout(action_row)
+        act_row.addWidget(export_btn)
+        root.addLayout(act_row)
 
         # ── MTC日志 ──
         log_group = QGroupBox("MTC消息日志")
         log_layout = QVBoxLayout(log_group)
-        self._log_table = QTableWidget(0, 5)
-        self._log_table.setHorizontalHeaderLabels(["#", "时间", "SMPTE", "MTC消息", "帧数"])
-        self._log_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        log_layout.addWidget(self._log_table)
-        layout.addWidget(log_group, 1)
+        log_layout.setContentsMargins(4, 10, 4, 4)
+
+        # 统计栏
+        stats_row = QHBoxLayout()
+        self._log_count_label = QLabel("消息: 0")
+        self._log_count_label.setStyleSheet("color: #888; font-size: 11px;")
+        stats_row.addWidget(self._log_count_label)
+        self._log_rate_label = QLabel("速率: 0/秒")
+        self._log_rate_label.setStyleSheet("color: #888; font-size: 11px;")
+        stats_row.addWidget(self._log_rate_label)
+        stats_row.addStretch()
+        clear_log_btn = QPushButton("清除日志")
+        clear_log_btn.setFixedWidth(70)
+        clear_log_btn.setStyleSheet("font-size: 11px; padding: 2px 6px;")
+        clear_log_btn.clicked.connect(self._clear_log)
+        stats_row.addWidget(clear_log_btn)
+        log_layout.addLayout(stats_row)
+
+        # 日志显示区域
+        from PySide6.QtWidgets import QTextBrowser
+        self._log_view = QTextBrowser()
+        self._log_view.setStyleSheet("""
+            QTextBrowser {
+                background-color: #1a1a1d;
+                color: #ccc;
+                font-family: Consolas, 'Courier New', monospace;
+                font-size: 12px;
+                border: 1px solid #2a2a2d;
+                border-radius: 4px;
+                padding: 4px;
+            }
+        """)
+        self._log_view.setOpenLinks(False)
+        log_layout.addWidget(self._log_view, 1)
+        root.addWidget(log_group, 1)
 
     # ── MIDI ──────────────────────────────────────────────────────────────────
 
@@ -362,9 +419,14 @@ class TimecodeGenerator(BaseToolWindow):
             self._audio_sample_rate = decoded.sample_rate
             self._audio_channels = decoded.nchannels
             duration = len(self._audio_data) / self._audio_sample_rate / self._audio_channels
-            self._audio_label.setText(f"✓ {Path(path).name} ({duration:.1f}秒, {self._audio_sample_rate}Hz)")
+            self._audio_label.setText(f"✓{Path(path).name[:15]} ({duration:.0f}s)")
             self._audio_label.setStyleSheet("color: #4ec9b0;")
             self._audio_play_btn.setEnabled(True)
+            self._progress_slider.setEnabled(True)
+            self._progress_slider.setRange(0, int(duration * 1000))
+            self._progress_slider.setValue(0)
+            self._audio_total = len(self._audio_data) * 2  # bytes (SIGNED16)
+            self._progress_time.setText(f"00:00 / {int(duration//60):02d}:{int(duration%60):02d}")
             self.logger.info(f"音频已导入: {path}")
         except Exception as e:
             QMessageBox.critical(self, "导入失败", f"无法加载音频:\n{e}")
@@ -381,32 +443,58 @@ class TimecodeGenerator(BaseToolWindow):
             return
         try:
             import miniaudio
-            # 在后台线程播放音频
             self._audio_playing = True
-            self._audio_play_btn.setText("⏸ 暂停音频")
+            self._audio_play_btn.setText("⏸ 暂停")
             self._audio_stop_btn.setEnabled(True)
+            self._progress_timer.start()
 
-            # 将 samples 转为 generator
-            samples = self._audio_data
-            chunk_size = 4096
+            # 转为bytes
+            raw_bytes = bytes(self._audio_data)
             n_channels = self._audio_channels
             sr = self._audio_sample_rate
+            bpf = n_channels * 2  # bytes per frame
+            total = len(raw_bytes)
+            self._audio_total = total
 
-            def audio_generator():
-                """分块输出音频数据的generator"""
+            def audio_gen():
+                """支持seek的音频generator"""
                 pos = 0
-                while pos < len(samples):
+                buf = b''
+                framecount = yield  # prime
+                while True:
+                    # 处理 seek
+                    seek = self._audio_seek_to
+                    if seek >= 0:
+                        pos = max(0, min(seek, total - bpf))
+                        pos = pos - (pos % bpf)  # 对齐到帧边界
+                        buf = b''
+                        self._audio_seek_to = -1
+
                     if not self._audio_playing:
-                        # 输出静音直到停止
-                        yield bytes(chunk_size * 2 * n_channels)
+                        self._audio_position = pos
+                        framecount = yield b'\x00' * (framecount * bpf)
                         continue
-                    end = min(pos + chunk_size * n_channels, len(samples))
-                    chunk = samples[pos:end]
-                    pos = end
-                    # array.array -> bytes
-                    yield chunk.tobytes()
-                # 播放结束
-                self._audio_playing = False
+
+                    # 补充缓冲区
+                    need = framecount * bpf
+                    while len(buf) < need and pos < total:
+                        end = min(pos + need * 2, total)
+                        buf += raw_bytes[pos:end]
+                        pos = end
+
+                    if not buf and pos >= total:
+                        self._audio_playing = False
+                        self._audio_position = total
+                        framecount = yield b'\x00' * need
+                        continue
+
+                    data = buf[:need]
+                    buf = buf[need:]
+                    if len(data) < need:
+                        data += b'\x00' * (need - len(data))
+
+                    self._audio_position = pos - len(buf)
+                    framecount = yield data
 
             def play():
                 try:
@@ -415,7 +503,9 @@ class TimecodeGenerator(BaseToolWindow):
                         nchannels=n_channels,
                         sample_rate=sr
                     )
-                    dev.start(audio_generator)
+                    gen = audio_gen()
+                    next(gen)
+                    dev.start(gen)
                     self._audio_stream = dev
                     while self._audio_playing:
                         time.sleep(0.1)
@@ -433,14 +523,54 @@ class TimecodeGenerator(BaseToolWindow):
 
     def _on_stop_audio(self):
         self._audio_playing = False
-        self._audio_play_btn.setText("▶ 播放音频")
+        self._audio_play_btn.setText("▶ 播放")
         self._audio_stop_btn.setEnabled(False)
+        self._progress_timer.stop()
         if self._audio_stream:
             try:
                 self._audio_stream.stop()
             except Exception:
                 pass
         self.logger.info("音频播放已停止")
+
+    def _on_slider_pressed(self):
+        """用户开始拖动进度条"""
+        self._progress_timer.stop()
+
+    def _on_slider_released(self):
+        """用户松开进度条，执行seek"""
+        if not self._audio_data:
+            return
+        ms = self._progress_slider.value()
+        sr = self._audio_sample_rate
+        ch = self._audio_channels
+        sample_pos = int(ms / 1000.0 * sr) * ch
+        byte_pos = sample_pos * 2  # SIGNED16
+        self._audio_seek_to = byte_pos
+        if self._audio_playing:
+            self._progress_timer.start()
+
+    def _on_slider_moved(self, ms):
+        """拖动中实时更新时间显示"""
+        cur = ms / 1000.0
+        total = self._progress_slider.maximum() / 1000.0
+        self._progress_time.setText(
+            f"{int(cur//60):02d}:{int(cur%60):02d} / {int(total//60):02d}:{int(total%60):02d}"
+        )
+
+    def _update_progress(self):
+        """定时更新进度条位置"""
+        if not self._audio_playing or not self._audio_sample_rate:
+            return
+        sr = self._audio_sample_rate
+        ch = self._audio_channels
+        pos_bytes = self._audio_position
+        cur_sec = pos_bytes / (sr * ch * 2)
+        total_sec = self._audio_total / (sr * ch * 2)
+        self._progress_slider.setValue(int(cur_sec * 1000))
+        self._progress_time.setText(
+            f"{int(cur_sec//60):02d}:{int(cur_sec%60):02d} / {int(total_sec//60):02d}:{int(total_sec%60):02d}"
+        )
 
     # ── 预设 ──────────────────────────────────────────────────────────────────
 
@@ -578,23 +708,45 @@ class TimecodeGenerator(BaseToolWindow):
         tc = f"{self._hours:02d}:{self._minutes:02d}:{self._seconds:02d}:{self._frames:02d}"
         total_frames = (self._hours * 3600 + self._minutes * 60 + self._seconds) * self._fps + self._frames
         mtc_msg = self._generate_mtc_string()
-
-        row = self._log_table.rowCount()
-        self._log_table.insertRow(row)
         now = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-        self._log_table.setItem(row, 0, QTableWidgetItem(str(row + 1)))
-        self._log_table.setItem(row, 1, QTableWidgetItem(now))
-        self._log_table.setItem(row, 2, QTableWidgetItem(tc))
-        self._log_table.setItem(row, 3, QTableWidgetItem(mtc_msg))
-        self._log_table.setItem(row, 4, QTableWidgetItem(str(total_frames)))
+        row = len(self._tc_log) + 1
+
+        # 彩色HTML日志
+        html = (
+            f'<span style="color:#555">#{row:>4d}</span> '
+            f'<span style="color:#666">{now}</span> '
+            f'<span style="color:#4ec9b0; font-weight:bold">{tc}</span> '
+            f'<span style="color:#e8912d">{mtc_msg}</span> '
+            f'<span style="color:#569cd6">帧{total_frames}</span>'
+        )
+        self._log_view.append(html)
+
+        # 限制行数
+        if row > 500:
+            # 移除最早的行
+            doc = self._log_view.document()
+            if doc.blockCount() > 500:
+                cursor = self._log_view.textCursor()
+                cursor.movePosition(cursor.MoveOperation.Start)
+                cursor.select(cursor.SelectionType.BlockUnderCursor)
+                cursor.removeSelectedText()
+                cursor.deleteChar()  # 删除换行
 
         self._tc_log.append({
             'timestamp': now, 'smpte': tc, 'mtc': mtc_msg, 'frames': total_frames
         })
+        self._log_count_label.setText(f"消息: {len(self._tc_log)}")
 
-        if self._log_table.rowCount() > 500:
-            self._log_table.removeRow(0)
-            self._tc_log.pop(0)
+        # 自动滚动到底部
+        sb = self._log_view.verticalScrollBar()
+        sb.setValue(sb.maximum())
+
+    def _clear_log(self):
+        """清除日志"""
+        self._tc_log.clear()
+        self._log_view.clear()
+        self._log_count_label.setText("消息: 0")
+        self._log_rate_label.setText("速率: 0/秒")
 
     def _generate_mtc_string(self):
         hh, mm, ss, ff = self._hours, self._minutes, self._seconds, self._frames

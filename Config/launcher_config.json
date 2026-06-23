@@ -1,16 +1,16 @@
 {
   "recent_tools": [
+    "CueDesigner",
+    "MIDIMapper",
+    "BPMAnalyzer",
     "TimecodeGenerator",
+    "MIDISender",
+    "MusicStructureAnalyzer",
+    "MIDIMonitor",
+    "BackupManager",
     "EquipmentListGenerator",
-    "CueSheetGenerator",
-    "AIStageDesigner",
-    "AITroubleshooter",
-    "AILightingDesigner",
-    "AIProgrammingAssistant",
-    "RDMTool",
-    "DistributionPlanner",
-    "GeneratorCalculator"
+    "CueSheetGenerator"
   ],
   "favorites": [],
-  "window_geometry": "01d9d0cb0003000000000246000000e8000006c3000003f300000246000000e8000006c3000003f300000000000000000a0000000246000000e8000006c3000003f3"
+  "window_geometry": "01d9d0cb000300000000014d000001a2000005ca000004ad0000014d000001a2000005ca000004ad00000000000000000a000000014d000001a2000005ca000004ad"
 }
