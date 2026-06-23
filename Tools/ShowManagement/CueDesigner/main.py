@@ -648,6 +648,12 @@ class CueDesignerWindow(BaseToolWindow):
 
         self.dmx_preview.set_values(preview_vals)
 
+    def closeEvent(self, event):
+        self.crossfade_timer.stop()
+        self.chase_timer.stop()
+        self.effect_timer.stop()
+        super().closeEvent(event)
+
 
 if __name__ == '__main__':
     import traceback

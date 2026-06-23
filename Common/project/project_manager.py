@@ -162,7 +162,7 @@ class ProjectManager:
             max_backups = ConfigManager().get("max_backups", 50)
         """"""
         backups = sorted(
-            [d for d in BACKUPS_DIR.iterdir() if d.is_dir() and d.name.startswith(project_name)],
+            [d for d in BACKUPS_DIR.iterdir() if d.is_dir() and d.name.startswith(f"{project_name}_")],
             key=lambda d: d.stat().st_mtime,
             reverse=True
         )
@@ -185,8 +185,9 @@ class ProjectManager:
                         "modified": data.get("modified_at", ""),
                         "venue": data.get("venue", ""),
                     })
-                except (json.JSONDecodeError, IOError):
-                    pass
+                except (json.JSONDecodeError, IOError) as e:
+                    if self.logger:
+                        self.logger.warning(f"项目加载失败 {pf}: {e}")
         return sorted(projects, key=lambda p: p["modified"], reverse=True)
 
     def get_recent_projects(self) -> List[str]:

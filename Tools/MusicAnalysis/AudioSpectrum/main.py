@@ -3,6 +3,7 @@ AudioSpectrum - 音频频谱分析工具
 实时FFT频谱显示、瀑布图、频段能量监测
 """
 import sys
+import math
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / 'Common'))
@@ -87,8 +88,6 @@ class SpectrumCanvas(QWidget):
         for i in range(1, n):
             if freqs[i] < 20 or freqs[i] > 20000:
                 continue
-            # 对数频率映射
-            import math
             log_min = math.log10(20)
             log_max = math.log10(20000)
             log_freq = math.log10(max(freqs[i], 20))
@@ -139,7 +138,6 @@ class WaterfallCanvas(QWidget):
         data = self._waterfall_data
         rows, cols = data.shape
 
-        import math
         log_min = math.log10(20)
         log_max = math.log10(20000)
         freqs = [i * self._sample_rate / self._fft_size for i in range(cols)]

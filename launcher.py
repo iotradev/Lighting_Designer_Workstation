@@ -61,6 +61,31 @@ def _find_python():
 PYTHON_EXE = _find_python()
 
 
+def _run_tool(folder, exe, parent=None):
+    script = BASE_DIR / "Tools" / folder / exe / "main.py"
+    if not script.exists():
+        if parent:
+            QMessageBox.warning(parent, "错误", f"找不到: {script}")
+        return False
+    if not PYTHON_EXE:
+        if parent:
+            QMessageBox.critical(parent, "未找到 Python",
+                "需要安装 Python 3.10+ 才能运行工具。\n\n"
+                "下载地址: https://www.python.org/downloads/\n\n"
+                "安装时请勾选 'Add Python to PATH'")
+        return False
+    try:
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(BASE_DIR) + os.pathsep + env.get("PYTHONPATH", "")
+        subprocess.Popen([PYTHON_EXE, str(script)], cwd=str(script.parent), env=env)
+    except Exception as e:
+        if parent:
+            QMessageBox.critical(parent, "启动失败",
+                f"无法启动 {exe}:\n{type(e).__name__}: {e}")
+        return False
+    return True
+
+
 # 工具定义
 CATEGORIES = [
     {"name": "音乐分析", "icon": "🎵", "color": "#e8912d",
@@ -132,21 +157,24 @@ CATEGORIES = [
 ]
 
 
+_CONFIG_DEFAULTS = {"recent_tools": [], "favorites": [], "window_geometry": None}
+
 def _load_config():
     if CONFIG_FILE.exists():
         try:
-            return json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            pass
-    return {"recent_tools": [], "favorites": [], "window_geometry": None}
+            loaded = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+            return {**_CONFIG_DEFAULTS, **loaded}
+        except Exception as e:
+            print(f"[Launcher] 配置加载失败，使用默认值: {e}", file=sys.stderr)
+    return dict(_CONFIG_DEFAULTS)
 
 
 def _save_config(cfg):
     try:
         CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
         CONFIG_FILE.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[Launcher] 配置保存失败: {e}", file=sys.stderr)
 
 
 class SplashScreen(QWidget):
@@ -382,7 +410,7 @@ class CategoryCard(QFrame):
         self.setMinimumHeight(min_h)
 
     def _launch(self, folder, exe):
-        if self._run_tool(folder, exe):
+        if _run_tool(folder, exe, parent=self):
             if self.tool_launched:
                 self.tool_launched.emit(folder, exe)
 
@@ -694,13 +722,13 @@ class LauncherWindow(QMainWindow):
         # 搜索时重置分类过滤
         if text:
             self._active_cat = -1
-            for btn in self.cat_buttons:
-                cat = CATEGORIES[self.cat_buttons.index(btn)]
+            for i, btn in enumerate(self.cat_buttons):
+                cat = CATEGORIES[i]
                 btn.setStyleSheet(self._cat_style(cat["color"], False))
-        for card in self.cards:
+        for i, card in enumerate(self.cards):
             if not text:
                 # 恢复分类过滤状态
-                card.setVisible(self._active_cat == -1 or self.cards.index(card) == self._active_cat)
+                card.setVisible(self._active_cat == -1 or i == self._active_cat)
                 continue
             visible = False
             for btn in card.findChildren(ToolButton):
@@ -716,36 +744,15 @@ class LauncherWindow(QMainWindow):
         for card in self.cards:
             for btn in card.findChildren(ToolButton):
                 if text in btn.text().lower() or text in btn.toolTip().lower():
-                    btn.click()
+                    btn.setFocus()
                     return
 
     def _clear_search(self):
         self.search_box.clear()
         self._filter_category(-1)
 
-    def _run_tool(self, folder, exe):
-        script = BASE_DIR / "Tools" / folder / exe / "main.py"
-        if not script.exists():
-            QMessageBox.warning(self, "错误", f"找不到: {script}")
-            return False
-        if not PYTHON_EXE:
-            QMessageBox.critical(self, "未找到 Python",
-                "需要安装 Python 3.10+ 才能运行工具。\n\n"
-                "下载地址: https://www.python.org/downloads/\n\n"
-                "安装时请勾选 'Add Python to PATH'")
-            return False
-        try:
-            env = os.environ.copy()
-            env["PYTHONPATH"] = str(BASE_DIR) + os.pathsep + env.get("PYTHONPATH", "")
-            subprocess.Popen([PYTHON_EXE, str(script)], cwd=str(script.parent), env=env)
-        except Exception as e:
-            QMessageBox.critical(self, "启动失败",
-                f"无法启动 {exe}:\n{type(e).__name__}: {e}")
-            return False
-        return True
-
     def _launch_tool(self, name, exe, desc, folder):
-        if self._run_tool(folder, exe):
+        if _run_tool(folder, exe, parent=self):
             self._on_tool_launched(folder, exe)
 
     def _on_tool_launched(self, folder, exe):

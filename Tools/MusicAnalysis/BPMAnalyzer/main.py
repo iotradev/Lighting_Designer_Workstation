@@ -566,14 +566,18 @@ class BPMAnalyzerWindow(BaseToolWindow):
             self.status_ready.setText("就绪")
     
     def _realtime_tick(self):
-        """实时分析定时回调"""
+        """实时分析定时回调 - 滑动窗口分析"""
         if not self.current_file or self.engine.samples is None:
             return
         
-        import random
-        # 模拟滑动窗口分析
-        t = random.uniform(0, max(0, self.engine.duration - 5))
-        result = self.engine.detect_bpm(t, t + 5.0)
+        if not hasattr(self, '_rt_position'):
+            self._rt_position = 0.0
+        window = 5.0
+        step = 2.0
+        self._rt_position += step
+        if self._rt_position + window > self.engine.duration:
+            self._rt_position = 0.0
+        result = self.engine.detect_bpm(self._rt_position, self._rt_position + window)
         
         if result['bpm'] > 0:
             self.bpm_display.set_bpm(result['bpm'], result['confidence'])

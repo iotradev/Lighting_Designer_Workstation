@@ -407,7 +407,8 @@ class MIDIMonitorWindow(BaseToolWindow):
     def _add_table_row(self, msg: MIDIMessage):
         row = self.table.rowCount()
         if row >= self._max_rows:
-            self.table.removeRow(0)
+            batch = self._max_rows // 4
+            self.table.removeRows(0, batch)
             row = self.table.rowCount()
 
         self.table.insertRow(row)

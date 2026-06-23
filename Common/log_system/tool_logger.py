@@ -159,6 +159,7 @@ class LogPanel(QWidget):
         """)
         layout.addWidget(self.log_text)
         self.logger.set_widget(self.log_text)
+        self.level_combo.setCurrentText("Info")
 
     def _on_level_changed(self, text):
         """"""

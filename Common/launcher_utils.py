@@ -3,11 +3,11 @@
 import subprocess
 
 
-def run_process(command, cwd=None, logger=None):
+def run_process(command, cwd=None, logger=None, timeout=30):
 
     try:
 
-        result = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
+        result = subprocess.run(command, cwd=cwd, capture_output=True, text=True, timeout=timeout)
 
         if logger:
 
@@ -28,6 +28,14 @@ def run_process(command, cwd=None, logger=None):
         if logger:
 
             logger.error(f": {command} - {exc}")
+
+        raise
+
+    except subprocess.TimeoutExpired as exc:
+
+        if logger:
+
+            logger.error(f": {command} - : {timeout}s")
 
         raise
 

@@ -351,7 +351,6 @@ class FXDesignerWindow(BaseToolWindow):
     def _add_effect(self, effect_type: EffectType):
         idx = len(self.effects)
         name = f"{effect_type.value}_{self._cue_counter}"
-        self._cue_counter += 1
         fx = FxEffect(
             name=name,
             effect_type=effect_type,
@@ -362,6 +361,7 @@ class FXDesignerWindow(BaseToolWindow):
             pos_x=3 + idx * 2,
             pos_y=3
         )
+        self._cue_counter += 1
         self.effects.append(fx)
         self._refresh_list()
         self._refresh_views()

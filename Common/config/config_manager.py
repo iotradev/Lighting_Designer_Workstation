@@ -5,7 +5,9 @@
 : D:/Lighting_Designer_Workstation/Config/
 """
 import json
+import os
 import threading
+import tempfile
 from pathlib import Path
 from datetime import datetime
 
@@ -16,7 +18,6 @@ CONFIG_FILE = CONFIG_DIR / "settings.json"
 class ConfigManager:
     """"""
     _instance = None
-    _data = None
     _lock = threading.Lock()
 
     def __new__(cls):
@@ -85,8 +86,14 @@ class ConfigManager:
     def save(self):
         """"""
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-            json.dump(self._data, f, indent=2, ensure_ascii=False)
+        fd, tmp_path = tempfile.mkstemp(dir=str(CONFIG_DIR), suffix=".tmp")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(self._data, f, indent=2, ensure_ascii=False)
+            Path(tmp_path).replace(CONFIG_FILE)
+        except Exception:
+            Path(tmp_path).unlink(missing_ok=True)
+            raise
 
     def add_recent_project(self, path):
         """"""
