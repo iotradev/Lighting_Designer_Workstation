@@ -10,16 +10,14 @@ from datetime import datetime
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QFrame, QScrollArea, QGridLayout,
-    QLineEdit, QMessageBox, QGraphicsOpacityEffect, QSizePolicy,
-    QToolButton, QMenu, QWidgetAction, QSpacerItem
+    QLineEdit, QMessageBox, QSizePolicy
 )
 from PySide6.QtCore import (
-    Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, QSize,
-    QParallelAnimationGroup, Property, QRect, QRectF
+    Qt, QTimer, QPoint, QSize, QRect
 )
 from PySide6.QtGui import (
-    QFont, QColor, QPainter, QPalette, QIcon, QAction,
-    QLinearGradient, QBrush, QPen, QPixmap, QCursor, QFontMetrics
+    QFont, QColor, QPainter, QPalette,
+    QLinearGradient, QBrush, QPen
 )
 
 BASE_DIR = Path(__file__).parent

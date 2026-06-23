@@ -5,11 +5,10 @@
 """
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-    QSlider, QSpinBox, QDoubleSpinBox, QPushButton, QComboBox,
-    QFrame, QScrollArea, QGridLayout, QGroupBox
+    QSlider, QGridLayout, QGroupBox
 )
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QPainter, QColor, QFont, QPen, QLinearGradient
+from PySide6.QtGui import QPainter, QColor, QFont
 
 
 class LEDMeter(QWidget):

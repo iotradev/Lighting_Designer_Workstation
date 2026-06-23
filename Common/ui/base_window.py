@@ -14,7 +14,7 @@ from pathlib import Path
 
 from PySide6.QtWidgets import (
     QMainWindow, QMenu, QStatusBar, QLabel,
-    QDockWidget, QFileDialog, QMessageBox, QWidget, QApplication,
+    QDockWidget, QFileDialog, QMessageBox, QApplication,
 )
 from PySide6.QtCore import Qt, QTimer, QByteArray, QSize
 from PySide6.QtGui import QAction, QKeySequence, QDragEnterEvent, QDropEvent
@@ -24,7 +24,7 @@ sys.path.insert(0, str(BASE_DIR / "Common"))
 
 from themes.stylesheet import generate_stylesheet
 from config.config_manager import ConfigManager
-from log_system.tool_logger import ToolLogger, LogPanel
+from log_system.tool_logger import LogPanel
 from project.project_manager import ProjectManager
 
 

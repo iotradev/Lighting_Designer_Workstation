@@ -12,12 +12,11 @@ from ui.base_window import BaseToolWindow
 
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QComboBox, QSpinBox, QGroupBox, QTableWidget, QTableWidgetItem,
-    QHeaderView, QFileDialog, QFrame, QGridLayout, QMessageBox, QCheckBox,
-    QSlider, QTextBrowser, QSplitter
+    QComboBox, QSpinBox, QGroupBox, QTableWidget,
+    QFileDialog, QFrame, QMessageBox, QCheckBox,
+    QSlider, QTextBrowser
 )
-from PySide6.QtCore import Qt, QTimer, Signal, QObject
-from PySide6.QtGui import QFont, QColor, QPalette
+from PySide6.QtCore import Qt, QTimer
 
 try:
     import rtmidi
@@ -106,6 +105,20 @@ class TimecodeGenerator(BaseToolWindow):
         self._build_ui()
         self._refresh_midi_ports()
         self.logger.info("时间码生成器 v3 已初始化")
+
+    def _ensure_visible(self):
+        """确保窗口在屏幕内可见"""
+        from PySide6.QtGui import QGuiApplication
+        screen = QGuiApplication.primaryScreen()
+        if screen:
+            geo = screen.availableGeometry()
+            # 如果窗口不在屏幕内，居中显示
+            if not geo.intersects(self.geometry()):
+                self.move(geo.center() - self.rect().center())
+            # 确保窗口不被最小化
+            self.showNormal()
+            self.raise_()
+            self.activateWindow()
 
     def _build_ui(self):
         central = QWidget()
@@ -807,9 +820,22 @@ if __name__ == '__main__':
     import traceback
     try:
         from PySide6.QtWidgets import QApplication
+        from PySide6.QtCore import Qt, QTimer
         app = QApplication(sys.argv)
         window = TimecodeGenerator()
+        
+        # 强制窗口可见
+        window.setWindowFlags(window.windowFlags() | Qt.WindowStaysOnTopHint)
         window.show()
+        window.raise_()
+        window.activateWindow()
+        
+        # 2秒后取消置顶
+        def unpin():
+            window.setWindowFlags(window.windowFlags() & ~Qt.WindowStaysOnTopHint)
+            window.show()
+        QTimer.singleShot(2000, unpin)
+        
         sys.exit(app.exec())
     except Exception as _e:
         traceback.print_exc()
