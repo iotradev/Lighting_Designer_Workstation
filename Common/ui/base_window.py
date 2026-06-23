@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
     QDockWidget, QFileDialog, QMessageBox, QApplication,
 )
 from PySide6.QtCore import Qt, QTimer, QByteArray, QSize
-from PySide6.QtGui import QAction, QKeySequence, QDragEnterEvent, QDropEvent, QPalette, QColor
+from PySide6.QtGui import QAction, QKeySequence, QDragEnterEvent, QDropEvent, QPalette, QColor, QIcon
 
 BASE_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(BASE_DIR / "Common"))
@@ -97,6 +97,9 @@ class BaseToolWindow(QMainWindow):
         self.setStyleSheet(generate_stylesheet(theme))
 
         self.setWindowTitle(f"{tool_title} - Lighting Designer Workstation")
+        icon_path = BASE_DIR / "Assets" / "icon.ico"
+        if icon_path.exists():
+            self.setWindowIcon(QIcon(str(icon_path)))
         self.setMinimumSize(800, 600)
         self.resize(width, height)
         self.setAcceptDrops(True)
