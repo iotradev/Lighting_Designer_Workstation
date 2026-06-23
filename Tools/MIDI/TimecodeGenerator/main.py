@@ -559,9 +559,10 @@ class TimecodeGenerator(BaseToolWindow):
             f"{int(cur_sec//60):02d}:{int(cur_sec%60):02d} / {int(total_sec//60):02d}:{int(total_sec%60):02d}"
         )
 
-        # 同步模式: 音频位置驱动时间码
+        # 同步模式: 音频位置驱动时间码 + 发送MTC
         if self._sync_mode and self._running:
             self._sync_timecode_from_audio(cur_sec)
+            self._send_mtc_for_current_frame()
 
     def _sync_timecode_from_audio(self, audio_sec):
         """根据音频播放位置同步时间码"""
@@ -573,6 +574,21 @@ class TimecodeGenerator(BaseToolWindow):
         self._seconds = rem // self._fps
         self._frames = rem % self._fps
         self._update_display()
+
+    def _send_mtc_for_current_frame(self):
+        """发送当前帧的MTC quarter-frame消息"""
+        if not self._midi_out or not self._send_mtc:
+            return
+        fps_type = {24: 0, 25: 1, 30: 3}.get(self._fps, 1)
+        self._send_mtc_quarter_frame(0, self._frames & 0x0F)
+        self._send_mtc_quarter_frame(1, (self._frames >> 4) & 0x01)
+        self._send_mtc_quarter_frame(2, self._seconds & 0x0F)
+        self._send_mtc_quarter_frame(3, (self._seconds >> 4) & 0x03)
+        self._send_mtc_quarter_frame(4, self._minutes & 0x0F)
+        self._send_mtc_quarter_frame(5, (self._minutes >> 4) & 0x03)
+        self._send_mtc_quarter_frame(6, self._hours & 0x0F)
+        self._send_mtc_quarter_frame(7, (fps_type << 1) | ((self._hours >> 4) & 0x01))
+        self._log_timecode()
 
     # ── 预设 ──────────────────────────────────────────────────────────────────
 
