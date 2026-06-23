@@ -324,10 +324,11 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
 
 /* 分组框 */
 QGroupBox {{
+    background-color: {c['surface']};
     border: 1px solid {c['border']};
     border-radius: {r['md']}px;
-    margin-top: 20px;
-    padding: 16px 10px 10px 10px;
+    margin-top: 24px;
+    padding: 20px 10px 10px 10px;
     font-weight: bold;
     color: {c['accent']};
 }}
@@ -335,13 +336,11 @@ QGroupBox::title {{
     subcontrol-origin: margin;
     subcontrol-position: top left;
     left: 12px;
-    padding: 2px 10px;
+    top: 2px;
+    padding: 3px 12px;
     color: {c['accent']};
-    background-color: {c['background']};
-}}
-QGroupBox QWidget {{
-    margin: 0px;
-    padding: 0px;
+    background-color: {c['surface']};
+    border-radius: {r['sm']}px;
 }}
 QGroupBox QLabel {{
     padding: 2px 4px;
