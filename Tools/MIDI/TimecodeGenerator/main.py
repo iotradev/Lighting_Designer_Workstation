@@ -248,7 +248,7 @@ class TimecodeGenerator(BaseToolWindow):
         progress_row.addWidget(self._volume_slider)
         self._volume_label = QLabel("80%")
         self._volume_label.setStyleSheet("color: #888; font-size: 11px;")
-        self._volume_label.setFixedWidth(45)
+        self._volume_label.setFixedWidth(50)
         progress_row.addWidget(self._volume_label)
 
         ctrl_layout.addLayout(progress_row)
