@@ -170,7 +170,7 @@ class TimecodeGenerator(BaseToolWindow):
             btn = QPushButton(label)
             btn.setCheckable(True)
             btn.setChecked(mult == 1.0)
-            btn.setFixedWidth(45)
+            btn.setMinimumWidth(50)
             btn.clicked.connect(lambda checked, m=mult: self._set_speed(m))
             tc_layout.addWidget(btn)
         root.addWidget(tc_group)
@@ -248,7 +248,7 @@ class TimecodeGenerator(BaseToolWindow):
         progress_row.addWidget(self._volume_slider)
         self._volume_label = QLabel("80%")
         self._volume_label.setStyleSheet("color: #888; font-size: 11px;")
-        self._volume_label.setFixedWidth(35)
+        self._volume_label.setFixedWidth(45)
         progress_row.addWidget(self._volume_label)
 
         ctrl_layout.addLayout(progress_row)

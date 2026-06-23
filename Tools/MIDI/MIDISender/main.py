@@ -398,7 +398,7 @@ class MIDISenderWindow(BaseToolWindow):
         ctrl_layout.addWidget(self.velocity_slider)
 
         self.velocity_label = QLabel("100")
-        self.velocity_label.setFixedWidth(30)
+        self.velocity_label.setFixedWidth(40)
         ctrl_layout.addWidget(self.velocity_label)
 
         self.velocity_bar = QProgressBar()
