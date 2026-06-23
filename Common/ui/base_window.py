@@ -8,8 +8,10 @@ BaseToolWindow - GrandMA3 风格基础工具窗口框架
 - 可停靠面板(日志面板/项目面板)
 - 自动保存/主题切换/DPI适配
 - 最近项目记录/拖放支持
+- Windows 深色标题栏
 """
 import sys
+import platform
 from pathlib import Path
 
 from PySide6.QtWidgets import (
@@ -36,6 +38,26 @@ def _ensure_dpi_awareness():
         if font.pointSize() < 11:
             font.setPointSize(11)
             app.setFont(font)
+
+
+def _apply_dark_title_bar(window):
+    """Windows 10/11 深色标题栏"""
+    if platform.system() != "Windows":
+        return
+    try:
+        import ctypes
+        hwnd = int(window.winId())
+        DWMWA_USE_IMMERSIVE_DARK_MODE = 20
+        ctypes.windll.dwmapi.DwmSetWindowAttribute(
+            hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE,
+            ctypes.byref(ctypes.c_int(1)), ctypes.sizeof(ctypes.c_int)
+        )
+        # 刷新标题栏颜色
+        GWL_STYLE = -16
+        style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_STYLE)
+        ctypes.windll.user32.SetWindowLongW(hwnd, GWL_STYLE, style)
+    except Exception:
+        pass
 
 
 def _apply_dark_palette(app):
@@ -313,10 +335,21 @@ class BaseToolWindow(QMainWindow):
         self.config.save_window_layout(self.tool_name, self.saveGeometry().toHex().data().decode())
 
     def _restore_geometry(self):
-        """恢复窗口位置"""
+        """恢复窗口位置，确保窗口在可见屏幕范围内"""
         geo = self.config.load_window_layout(self.tool_name)
         if geo:
             self.restoreGeometry(QByteArray.fromHex(geo.encode()))
+        # 确保窗口在可见屏幕范围内
+        screen = QApplication.primaryScreen()
+        if screen:
+            sr = screen.availableGeometry()
+            wr = self.frameGeometry()
+            if not sr.intersects(wr):
+                self.move(sr.center() - self.rect().center())
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        _apply_dark_title_bar(self)
 
     # ===== 主题切换 =====
 
