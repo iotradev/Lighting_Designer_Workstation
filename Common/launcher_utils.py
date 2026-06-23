@@ -38,7 +38,3 @@ def run_process(command, cwd=None, logger=None):
             logger.error(f": {command} - {exc}")
 
         raise
-    except Exception as exc:
-        if logger:
-            logger.error(": %s", command, exc_info=exc)
-        raise

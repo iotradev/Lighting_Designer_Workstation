@@ -1,0 +1,11 @@
+[
+  {"name": "Open", "slot": 0, "description": "No gobo / open beam"},
+  {"name": "Gobo 1 - Breakup", "slot": 1, "description": "通用碎花纹"},
+  {"name": "Gobo 2 - Tree", "slot": 2, "description": "树叶纹"},
+  {"name": "Gobo 3 - Window", "slot": 3, "description": "窗户纹"},
+  {"name": "Gobo 4 - Dots", "slot": 4, "description": "圆点阵列"},
+  {"name": "Gobo 5 - Lines", "slot": 5, "description": "线条纹理"},
+  {"name": "Gobo 6 - Star", "slot": 6, "description": "星形"},
+  {"name": "Gobo 7 - Prism", "slot": 7, "description": "棱镜效果"},
+  {"name": "Gobo 8 - Flower", "slot": 8, "description": "花纹"}
+]

@@ -1,9 +1,22 @@
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "theme": "dark",
   "language": "zh_CN",
   "recent_projects": [
-    "/tmp/test.json"
+    "C:\\Users\\CBD\\AppData\\Local\\Temp\\pytest-of-CBD\\pytest-39\\test_open_project_dir0\\Projects\\Dir Test\\project.json",
+    "C:\\Users\\CBD\\AppData\\Local\\Temp\\pytest-of-CBD\\pytest-39\\test_open_project0\\Projects\\Open Test\\project.json",
+    "C:\\Users\\CBD\\AppData\\Local\\Temp\\pytest-of-CBD\\pytest-38\\test_open_project_dir0\\Projects\\Dir Test\\project.json",
+    "C:\\Users\\CBD\\AppData\\Local\\Temp\\pytest-of-CBD\\pytest-38\\test_open_project0\\Projects\\Open Test\\project.json",
+    "C:\\Users\\CBD\\AppData\\Local\\Temp\\pytest-of-CBD\\pytest-37\\test_open_project_dir0\\Projects\\Dir Test\\project.json",
+    "C:\\Users\\CBD\\AppData\\Local\\Temp\\pytest-of-CBD\\pytest-37\\test_open_project0\\Projects\\Open Test\\project.json",
+    "C:\\Users\\CBD\\AppData\\Local\\Temp\\pytest-of-CBD\\pytest-36\\test_open_project_dir0\\Projects\\Dir Test\\project.json",
+    "C:\\Users\\CBD\\AppData\\Local\\Temp\\pytest-of-CBD\\pytest-36\\test_open_project0\\Projects\\Open Test\\project.json",
+    "C:\\Users\\CBD\\AppData\\Local\\Temp\\pytest-of-CBD\\pytest-35\\test_open_project_dir0\\Projects\\Dir Test\\project.json",
+    "C:\\Users\\CBD\\AppData\\Local\\Temp\\pytest-of-CBD\\pytest-35\\test_open_project0\\Projects\\Open Test\\project.json",
+    "C:\\Users\\CBD\\AppData\\Local\\Temp\\pytest-of-CBD\\pytest-34\\test_open_project_dir0\\Projects\\Dir Test\\project.json",
+    "C:\\Users\\CBD\\AppData\\Local\\Temp\\pytest-of-CBD\\pytest-34\\test_open_project0\\Projects\\Open Test\\project.json",
+    "C:\\Users\\CBD\\AppData\\Local\\Temp\\pytest-of-CBD\\pytest-33\\test_open_project_dir0\\Projects\\Dir Test\\project.json",
+    "C:\\Users\\CBD\\AppData\\Local\\Temp\\pytest-of-CBD\\pytest-33\\test_open_project0\\Projects\\Open Test\\project.json"
   ],
   "max_recent": 20,
   "auto_save": true,
@@ -22,7 +35,7 @@
     },
     "MIDIMonitor": {
       "geometry": "01d9d0cb00030000000002a80000010a0000075700000447000002a800000128000007570000044700000000000000000a00000002a8000001280000075700000447",
-      "saved_at": "2026-06-23T14:10:44.993386"
+      "saved_at": "2026-06-23T23:48:34.911385"
     },
     "MIDISender": {
       "geometry": "01d9d0cb000300000000030c00000123000006f30000042e0000030c00000141000006f30000042e00000000000000000a000000030c00000141000006f30000042e",
@@ -30,7 +43,7 @@
     },
     "TimecodeMonitor": {
       "geometry": "01d9d0cb000300000000030c0000013c000006f3000004150000030c0000015a000006f30000041500000000000000000a000000030c0000015a000006f300000415",
-      "saved_at": "2026-06-23T14:10:46.217570"
+      "saved_at": "2026-06-23T18:05:56.545891"
     },
     "DMXCalculator": {
       "geometry": "01d9d0cb00030000000002da000000f10000072500000460000002da0000010f000007250000046000000000000000000a00000002da0000010f0000072500000460",
@@ -43,10 +56,6 @@
     "AIStageDesigner": {
       "geometry": "01d9d0cb00030000000002a80000010a0000075700000447000002a800000128000007570000044700000000000000000a00000002a8000001280000075700000447",
       "saved_at": "2026-06-23T14:10:41.248218"
-    },
-    "tool_x": {
-      "geometry": "ABC123",
-      "saved_at": "2026-06-22T12:44:26.089995"
     },
     "ArtNetMonitor": {
       "geometry": "01d9d0cb0003000000000276000000f10000078900000460000002760000010f000007890000046000000000000000000a00000002760000010f0000078900000460",
@@ -82,7 +91,7 @@
     },
     "FXDesigner": {
       "geometry": "01d9d0cb00030000000002a8000000f10000075700000460000002a80000010f000007570000046000000000000000000a00000002a80000010f0000075700000460",
-      "saved_at": "2026-06-23T14:10:43.079896"
+      "saved_at": "2026-06-23T18:06:50.019363"
     },
     "sACNMonitor": {
       "geometry": "01d9d0cb00030000000002a80000010a0000075700000447000002a800000128000007570000044700000000000000000a00000002a8000001280000075700000447",
@@ -126,7 +135,7 @@
     },
     "TimecodeGenerator": {
       "geometry": "01d9d0cb00030000000001e9000001c00000060f000004cb000001e9000001de0000060f000004cb00000000000000000a00000001e9000001de0000060f000004cb",
-      "saved_at": "2026-06-23T17:01:40.347171"
+      "saved_at": "2026-06-23T18:06:46.891936"
     },
     "CueSheetGenerator": {
       "geometry": "01d9d0cb00030000000002a8000000f10000075700000460000002a80000010f000007570000046000000000000000000a00000002a80000010f0000075700000460",
@@ -185,21 +194,5 @@
   "log_to_file": true,
   "plugins_enabled": true,
   "last_open_dir": "D:\\Lighting_Designer_Workstation\\Projects",
-  "last_export_dir": "D:\\Lighting_Designer_Workstation\\Exports",
-  "_test": {
-    "a": [
-      1,
-      2
-    ]
-  },
-  "test": {
-    "nested": {
-      "key": "value"
-    }
-  },
-  "deeply": {
-    "nested": {
-      "test": 42
-    }
-  }
+  "last_export_dir": "D:\\Lighting_Designer_Workstation\\Exports"
 }

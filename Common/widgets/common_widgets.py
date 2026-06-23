@@ -5,7 +5,7 @@
 """
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-    QSlider, QGridLayout, QGroupBox
+    QSlider, QGridLayout, QGroupBox, QPushButton
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPainter, QColor, QFont

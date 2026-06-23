@@ -5,7 +5,6 @@ GrandMA3 风格深色主题 · 侧栏导航 · 动画效果 · 自定义标题�
 """
 import sys, os, subprocess, json
 from pathlib import Path
-from datetime import datetime
 
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
@@ -13,7 +12,7 @@ from PySide6.QtWidgets import (
     QLineEdit, QMessageBox, QSizePolicy
 )
 from PySide6.QtCore import (
-    Qt, QTimer, QPoint, QSize, QRect
+    Qt, QTimer
 )
 from PySide6.QtGui import (
     QFont, QColor, QPainter, QPalette,
@@ -394,7 +393,9 @@ class CategoryCard(QFrame):
                 "安装时请勾选 'Add Python to PATH'")
             return
         try:
-            subprocess.Popen([PYTHON_EXE, str(script)], cwd=str(script.parent))
+            env = os.environ.copy()
+            env["PYTHONPATH"] = str(BASE_DIR)
+            subprocess.Popen([PYTHON_EXE, str(script)], cwd=str(script.parent), env=env)
         except Exception as e:
             QMessageBox.critical(self, "启动失败",
                 f"无法启动 {exe}:\n{type(e).__name__}: {e}")
@@ -751,7 +752,9 @@ class LauncherWindow(QMainWindow):
                 "安装时请勾选 'Add Python to PATH'")
             return
         try:
-            subprocess.Popen([PYTHON_EXE, str(script)], cwd=str(script.parent))
+            env = os.environ.copy()
+            env["PYTHONPATH"] = str(BASE_DIR)
+            subprocess.Popen([PYTHON_EXE, str(script)], cwd=str(script.parent), env=env)
         except Exception as e:
             QMessageBox.critical(self, "启动失败",
                 f"无法启动 {exe}:\n{type(e).__name__}: {e}")
@@ -797,10 +800,20 @@ class LauncherWindow(QMainWindow):
                 self.recent_btns_layout.addWidget(btn)
 
     def _open_projects(self):
-        os.startfile(str(BASE_DIR / "Projects"))
+        self._open_folder(str(BASE_DIR / "Projects"))
 
     def _open_base(self):
-        os.startfile(str(BASE_DIR))
+        self._open_folder(str(BASE_DIR))
+
+    @staticmethod
+    def _open_folder(path):
+        import platform
+        if platform.system() == "Windows":
+            os.startfile(path)
+        elif platform.system() == "Darwin":
+            subprocess.Popen(["open", path])
+        else:
+            subprocess.Popen(["xdg-open", path])
 
     def closeEvent(self, event):
         self.config["window_geometry"] = self.saveGeometry().toHex().data().decode()

@@ -1,0 +1,20 @@
+{
+  "name": "Standard Colors",
+  "colors": [
+    {"name": "Red", "hex": "#FF0000", "rgb": [255, 0, 0]},
+    {"name": "Green", "hex": "#00FF00", "rgb": [0, 255, 0]},
+    {"name": "Blue", "hex": "#0000FF", "rgb": [0, 0, 255]},
+    {"name": "Cyan", "hex": "#00FFFF", "rgb": [0, 255, 255]},
+    {"name": "Magenta", "hex": "#FF00FF", "rgb": [255, 0, 255]},
+    {"name": "Yellow", "hex": "#FFFF00", "rgb": [255, 255, 0]},
+    {"name": "Amber", "hex": "#FFBF00", "rgb": [255, 191, 0]},
+    {"name": "UV", "hex": "#7F00FF", "rgb": [127, 0, 255]},
+    {"name": "White", "hex": "#FFFFFF", "rgb": [255, 255, 255]},
+    {"name": "Warm White", "hex": "#FFD699", "rgb": [255, 214, 153]},
+    {"name": "Cool White", "hex": "#CCDDFF", "rgb": [204, 221, 255]},
+    {"name": "Lavender", "hex": "#B4A7D6", "rgb": [180, 167, 214]},
+    {"name": "Peach", "hex": "#FFDAB9", "rgb": [255, 218, 185]},
+    {"name": "Teal", "hex": "#008080", "rgb": [0, 128, 128]},
+    {"name": "Coral", "hex": "#FF6F61", "rgb": [255, 111, 97]}
+  ]
+}

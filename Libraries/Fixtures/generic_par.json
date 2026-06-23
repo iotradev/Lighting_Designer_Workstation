@@ -1,0 +1,68 @@
+[
+  {
+    "name": "Generic LED PAR",
+    "manufacturer": "Generic",
+    "type": "PAR",
+    "mode": "8ch",
+    "channels": [
+      {"offset": 0, "name": "Dimmer", "type": "dimmer", "default": 0},
+      {"offset": 1, "name": "Red", "type": "color", "default": 0},
+      {"offset": 2, "name": "Green", "type": "color", "default": 0},
+      {"offset": 3, "name": "Blue", "type": "color", "default": 0},
+      {"offset": 4, "name": "White", "type": "color", "default": 0},
+      {"offset": 5, "name": "Amber", "type": "color", "default": 0},
+      {"offset": 6, "name": "Strobe", "type": "effect", "default": 0},
+      {"offset": 7, "name": "Mode", "type": "control", "default": 0}
+    ],
+    "power_watts": 100,
+    "weight_kg": 3.5
+  },
+  {
+    "name": "Generic Moving Head Spot",
+    "manufacturer": "Generic",
+    "type": "Spot",
+    "mode": "16ch",
+    "channels": [
+      {"offset": 0, "name": "Pan", "type": "position", "default": 128},
+      {"offset": 1, "name": "Pan Fine", "type": "position", "default": 128},
+      {"offset": 2, "name": "Tilt", "type": "position", "default": 128},
+      {"offset": 3, "name": "Tilt Fine", "type": "position", "default": 128},
+      {"offset": 4, "name": "Pan/Tilt Speed", "type": "speed", "default": 0},
+      {"offset": 5, "name": "Dimmer", "type": "dimmer", "default": 0},
+      {"offset": 6, "name": "Shutter", "type": "effect", "default": 0},
+      {"offset": 7, "name": "Color", "type": "color", "default": 0},
+      {"offset": 8, "name": "Gobo", "type": "gobo", "default": 0},
+      {"offset": 9, "name": "Gobo Rotation", "type": "effect", "default": 0},
+      {"offset": 10, "name": "Prism", "type": "effect", "default": 0},
+      {"offset": 11, "name": "Focus", "type": "control", "default": 0},
+      {"offset": 12, "name": "Zoom", "type": "control", "default": 0},
+      {"offset": 13, "name": "Frost", "type": "effect", "default": 0},
+      {"offset": 14, "name": "Function", "type": "control", "default": 0},
+      {"offset": 15, "name": "Speed", "type": "speed", "default": 0}
+    ],
+    "power_watts": 300,
+    "weight_kg": 18.0
+  },
+  {
+    "name": "Generic LED Wash",
+    "manufacturer": "Generic",
+    "type": "Wash",
+    "mode": "12ch",
+    "channels": [
+      {"offset": 0, "name": "Dimmer", "type": "dimmer", "default": 0},
+      {"offset": 1, "name": "Red", "type": "color", "default": 0},
+      {"offset": 2, "name": "Green", "type": "color", "default": 0},
+      {"offset": 3, "name": "Blue", "type": "color", "default": 0},
+      {"offset": 4, "name": "White", "type": "color", "default": 0},
+      {"offset": 5, "name": "Amber", "type": "color", "default": 0},
+      {"offset": 6, "name": "UV", "type": "color", "default": 0},
+      {"offset": 7, "name": "Color Temp", "type": "color", "default": 0},
+      {"offset": 8, "name": "Strobe", "type": "effect", "default": 0},
+      {"offset": 9, "name": "Zoom", "type": "control", "default": 0},
+      {"offset": 10, "name": "Pan", "type": "position", "default": 128},
+      {"offset": 11, "name": "Tilt", "type": "position", "default": 128}
+    ],
+    "power_watts": 200,
+    "weight_kg": 8.0
+  }
+]
