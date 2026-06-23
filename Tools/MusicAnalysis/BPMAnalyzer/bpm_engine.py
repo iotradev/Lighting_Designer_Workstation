@@ -84,7 +84,8 @@ class BPMEngine:
 
     def detect_bpm(self, start_time=0.0, end_time=0.0) -> dict:
         """
-        检测BPM - 使用频谱通量 + 自相关
+        检测BPM - 多频段频谱通量 + 自相关 (v3)
+        改进: 低频聚焦、通量平滑、多分辨率、八度校正
         """
         if self.samples is None:
             return {'bpm': 0, 'message': '未加载音频'}
@@ -99,7 +100,7 @@ class BPMEngine:
         if len(seg) < sr:
             return {'bpm': 0, 'message': '音频太短'}
 
-        # ── 1. 计算频谱通量 (Spectral Flux) ──
+        # ── 1. 多频段频谱通量 ──
         hop = 512
         frame = 2048
         n_frames = (len(seg) - frame) // hop + 1
@@ -107,20 +108,44 @@ class BPMEngine:
             return {'bpm': 0, 'message': '音频太短'}
 
         window = np.hanning(frame)
-        flux = np.zeros(n_frames)
-        prev_mag = None
+        flux_full = np.zeros(n_frames)
+        flux_low = np.zeros(n_frames)   # 低频带 (鼓/贝斯)
+        flux_mid = np.zeros(n_frames)   # 中频带 (人声/旋律)
+        prev_full = None
+        prev_low = None
+        prev_mid = None
+
+        bin_hz = sr / frame
+        low_cut = int(60 / bin_hz)     # 60Hz
+        low_end = int(300 / bin_hz)    # 300Hz
+        mid_end = int(4000 / bin_hz)   # 4kHz
 
         for i in range(n_frames):
             chunk = seg[i*hop : i*hop+frame] * window
             mag = np.abs(np.fft.rfft(chunk))
-            if prev_mag is not None:
-                diff = mag - prev_mag
-                flux[i] = np.sum(np.maximum(diff, 0))
-            prev_mag = mag
+            if prev_full is not None:
+                diff_full = mag - prev_full
+                flux_full[i] = np.sum(np.maximum(diff_full, 0))
+                # 低频带: 聚焦鼓和贝斯
+                diff_low = mag[low_cut:low_end] - prev_full[low_cut:low_end]
+                flux_low[i] = np.sum(np.maximum(diff_low, 0))
+                # 中频带
+                diff_mid = mag[low_end:mid_end] - prev_full[low_end:mid_end]
+                flux_mid[i] = np.sum(np.maximum(diff_mid, 0))
+            prev_full = mag
 
         # 归一化
-        if flux.max() > 0:
-            flux /= flux.max()
+        for flux in (flux_full, flux_low, flux_mid):
+            mx = flux.max()
+            if mx > 0:
+                flux /= mx
+
+        # 加权合成: 低频权重最高 (鼓点检测)
+        flux = 0.6 * flux_low + 0.3 * flux_mid + 0.1 * flux_full
+
+        # 平滑通量 (3点移动平均减少噪声)
+        if len(flux) > 2:
+            flux = np.convolve(flux, [0.25, 0.5, 0.25], mode='same')
 
         # ── 2. 自适应阈值峰值检测 ──
         win_len = max(5, int(sr / hop * 0.4))
@@ -129,23 +154,50 @@ class BPMEngine:
             lo = max(0, i - win_len)
             hi = min(len(flux), i + win_len + 1)
             local_med = np.median(flux[lo:hi])
-            threshold = local_med * 1.2 + 0.02
+            threshold = local_med * 1.1 + 0.01  # 降低阈值减少漏检
 
             if flux[i] > flux[i-1] and flux[i] >= flux[i+1] and flux[i] > threshold:
                 t = (i * hop + s0) / sr
-                if not onsets or (t - onsets[-1]) >= 0.15:
+                if not onsets or (t - onsets[-1]) >= 0.12:
                     onsets.append(t)
 
         self.onset_times = onsets
 
-        # ── 3. 自相关法计算BPM ──
-        bpm = self._autocorrelation_bpm(flux, sr, hop)
+        # ── 3. 多分辨率自相关 ──
+        bpm_candidates = []
+        for frame_size in [2048, 4096]:
+            n_f = (len(seg) - frame_size) // hop + 1
+            if n_f < 10:
+                continue
+            win = np.hanning(frame_size)
+            f = np.zeros(n_f)
+            prev = None
+            for i in range(n_f):
+                c = seg[i*hop : i*hop+frame_size] * win
+                m = np.abs(np.fft.rfft(c))
+                if prev is not None:
+                    d = m - prev
+                    f[i] = np.sum(np.maximum(d, 0))
+                prev = m
+            mx = f.max()
+            if mx > 0:
+                f /= mx
+            bpm_c = self._autocorrelation_bpm(f, sr, hop)
+            if bpm_c > 0:
+                bpm_candidates.append(bpm_c)
+
+        # 取中位数作为最终结果
+        if bpm_candidates:
+            bpm = round(float(np.median(bpm_candidates)), 1)
+        else:
+            bpm = 0.0
+
+        # ── 4. 八度校正 ──
+        bpm = self._correct_octave_error(bpm, flux, sr, hop)
         self.current_bpm = bpm
 
-        # 存储能量曲线用于绘图
         self.energy_curve = flux
         time_axis = np.arange(len(flux)) * hop / sr + start_time
-
         conf = self._estimate_confidence(onsets)
 
         return {
@@ -160,14 +212,9 @@ class BPMEngine:
     def _autocorrelation_bpm(self, flux, sr, hop):
         """
         用自相关从频谱通量中提取主节奏周期
-        比简单间隔中位数更鲁棒
         """
-        # 对通量做半波整流 + 减均值
         sf = np.maximum(flux - np.mean(flux), 0)
-
-        # 自相关
         n = len(sf)
-        # 补零到2的幂次方加速FFT
         fft_size = 1
         while fft_size < 2 * n:
             fft_size *= 2
@@ -177,28 +224,24 @@ class BPMEngine:
         if acf[0] > 0:
             acf /= acf[0]
 
-        # 只看BPM 60-200 对应的lag范围
-        min_lag = int(60.0 / self.max_bpm * sr / hop)  # 对应max_bpm
-        max_lag = int(60.0 / self.min_bpm * sr / hop)  # 对应min_bpm
+        min_lag = int(60.0 / self.max_bpm * sr / hop)
+        max_lag = int(60.0 / self.min_bpm * sr / hop)
         min_lag = max(2, min_lag)
         max_lag = min(n - 1, max_lag)
 
         if max_lag <= min_lag:
             return 0.0
 
-        # 在有效范围内找峰值
         search = acf[min_lag:max_lag]
         if len(search) < 2:
             return 0.0
 
-        # 找最大峰值
         peak_idx = np.argmax(search) + min_lag
         peak_val = acf[peak_idx]
 
         if peak_val < 0.05:
             return 0.0
 
-        # 抛物线插值提高精度
         if 1 <= peak_idx < len(acf) - 1:
             alpha = acf[peak_idx - 1]
             beta = acf[peak_idx]
@@ -212,17 +255,50 @@ class BPMEngine:
         else:
             refined_lag = peak_idx
 
-        # lag -> 时间 -> BPM
         period_sec = refined_lag * hop / sr
         bpm = 60.0 / period_sec if period_sec > 0 else 0
 
-        # 合理范围限制
         while bpm > self.max_bpm:
             bpm /= 2
         while bpm < self.min_bpm:
             bpm *= 2
 
         return round(bpm, 1)
+
+    def _correct_octave_error(self, bpm, flux, sr, hop):
+        """
+        八度校正: 比较原BPM、半速、双速的自相关峰值强度
+        选择置信度最高的那个
+        """
+        if bpm <= 0:
+            return bpm
+
+        sf = np.maximum(flux - np.mean(flux), 0)
+        n = len(sf)
+        fft_size = 1
+        while fft_size < 2 * n:
+            fft_size *= 2
+        fft_sf = np.fft.rfft(sf, n=fft_size)
+        acf = np.fft.irfft(fft_sf * np.conj(fft_sf))[:n]
+        if acf[0] > 0:
+            acf /= acf[0]
+
+        def acf_strength(b):
+            lag = int(60.0 / b * sr / hop)
+            if 2 <= lag < len(acf):
+                return acf[lag]
+            return 0.0
+
+        candidates = [bpm]
+        half = bpm / 2
+        double = bpm * 2
+        if self.min_bpm <= half <= self.max_bpm:
+            candidates.append(half)
+        if self.min_bpm <= double <= self.max_bpm:
+            candidates.append(double)
+
+        best = max(candidates, key=acf_strength)
+        return round(best, 1)
 
     def _estimate_confidence(self, onset_times):
         """估计置信度: 基于自相关峰值强度 + 起始点间隔一致性"""
