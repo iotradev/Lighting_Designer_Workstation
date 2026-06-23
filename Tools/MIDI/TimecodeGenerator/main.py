@@ -96,7 +96,8 @@ class TimecodeGenerator(BaseToolWindow):
         self._audio_seek_to = -1
 
         # 同步模式
-        self._sync_mode = False  # True = 音频驱动时间码
+        self._sync_mode = False
+        self._volume = 0.8  # 0.0 ~ 1.0  # True = 音频驱动时间码
 
         # 定时器
         self._timer = QTimer(self)
@@ -207,7 +208,7 @@ class TimecodeGenerator(BaseToolWindow):
         audio_row.addWidget(self._audio_stop_btn)
         ctrl_layout.addLayout(audio_row)
 
-        # 进度条
+        # 进度条 + 音量
         progress_row = QHBoxLayout()
         progress_row.setSpacing(8)
         self._progress_slider = QSlider(Qt.Orientation.Horizontal)
@@ -222,6 +223,20 @@ class TimecodeGenerator(BaseToolWindow):
         self._progress_time.setStyleSheet("color: #888; font-size: 11px;")
         self._progress_time.setFixedWidth(100)
         progress_row.addWidget(self._progress_time)
+
+        progress_row.addSpacing(12)
+        progress_row.addWidget(QLabel("音量:"))
+        self._volume_slider = QSlider(Qt.Orientation.Horizontal)
+        self._volume_slider.setRange(0, 100)
+        self._volume_slider.setValue(80)
+        self._volume_slider.setFixedWidth(120)
+        self._volume_slider.valueChanged.connect(self._on_volume_changed)
+        progress_row.addWidget(self._volume_slider)
+        self._volume_label = QLabel("80%")
+        self._volume_label.setStyleSheet("color: #888; font-size: 11px;")
+        self._volume_label.setFixedWidth(35)
+        progress_row.addWidget(self._volume_label)
+
         ctrl_layout.addLayout(progress_row)
         root.addWidget(ctrl_group)
 
@@ -485,6 +500,15 @@ class TimecodeGenerator(BaseToolWindow):
                     if len(data) < need:
                         data += b'\x00' * (need - len(data))
 
+                    # 应用音量
+                    vol = self._volume
+                    if vol < 0.99:
+                        import struct
+                        samples = struct.unpack(f'<{len(data)//2}h', data)
+                        scaled = struct.pack(f'<{len(samples)}h',
+                            *[max(-32768, min(32767, int(s * vol))) for s in samples])
+                        data = scaled
+
                     self._audio_position = pos - len(buf)
                     framecount = yield data
 
@@ -545,6 +569,10 @@ class TimecodeGenerator(BaseToolWindow):
         self._progress_time.setText(
             f"{int(cur//60):02d}:{int(cur%60):02d} / {int(total//60):02d}:{int(total%60):02d}"
         )
+
+    def _on_volume_changed(self, value):
+        self._volume = value / 100.0
+        self._volume_label.setText(f"{value}%")
 
     def _update_progress(self):
         if not self._audio_playing or not self._audio_sample_rate:
