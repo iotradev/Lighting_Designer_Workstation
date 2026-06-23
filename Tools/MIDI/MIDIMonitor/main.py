@@ -5,7 +5,7 @@ MIDI Monitor - MIDI 信号监控工具
 """
 import sys
 import time
-import threading
+from threading import Lock
 from pathlib import Path
 
 # 将 Common 目录加入模块路径
@@ -193,7 +193,7 @@ class MIDIMonitorWindow(BaseToolWindow):
         self._max_rows = 2000
         self._active_filters: set[int] = set(FILTER_TYPES.values())
         self._message_queue: list[MIDIMessage] = []
-        self._queue_lock = threading.Lock()
+        self._queue_lock = Lock()
 
         self._build_ui()
         self._refresh_devices()

@@ -72,6 +72,8 @@ def hex_to_rgb(hex_color):
     h = hex_color.lstrip("#")
     if len(h) == 3:
         h = h[0]*2 + h[1]*2 + h[2]*2
+    if len(h) != 6:
+        raise ValueError(f"无效颜色值: {hex_color}")
     return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
 
 
@@ -114,4 +116,10 @@ def safe_filename(name):
     invalid = '<>:"/\\|?*'
     for c in invalid:
         name = name.replace(c, "_")
-    return name.strip()
+    name = name.strip()
+    reserved = {'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4',
+                'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2',
+                'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'}
+    if name.upper() in reserved:
+        name = f"_{name}"
+    return name

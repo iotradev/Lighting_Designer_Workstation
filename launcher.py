@@ -196,7 +196,7 @@ class SplashScreen(QWidget):
         self._progress = min(100, self._progress + 4)
         steps = [(15, "检查依赖"), (35, "加载主题"), (55, "初始化工具"), (75, "扫描插件"), (92, "准备界面")]
         for t, s in steps:
-            if self._progress >= t and self._progress < t + 15:
+            if self._progress >= t and self._progress <= t + 15:
                 self._status = s
         self.update()
         if self._progress >= 100:
@@ -605,7 +605,7 @@ class LauncherWindow(QMainWindow):
             py_status.setStyleSheet("color: #ff6b6b; font-size: 11px; background: transparent;")
         fl.addWidget(py_status)
         fl.addSpacing(12)
-        hint = QLabel("Ctrl+K 搜索 · Ctrl+B 抽屉 · Ctrl+Q 退出")
+        hint = QLabel("Ctrl+K 搜索 · Ctrl+B 侧栏 · Ctrl+Q 退出")
         hint.setStyleSheet("color: #555; font-size: 11px; background: transparent;")
         fl.addWidget(hint)
         right.addWidget(footer)
@@ -848,10 +848,6 @@ def main():
         import PySide6
     except ImportError:
         missing.append("PySide6")
-    try:
-        import numpy
-    except ImportError:
-        missing.append("numpy")
     if missing:
         QMessageBox.warning(None, "缺少依赖", f"请安装: pip install {' '.join(missing)}")
 

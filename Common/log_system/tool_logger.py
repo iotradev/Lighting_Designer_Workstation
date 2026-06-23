@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from enum import IntEnum
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, Signal, Qt as QtCoreQt
 from PySide6.QtWidgets import QTextEdit, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox
 from PySide6.QtGui import QTextCharFormat, QColor, QTextCursor, QFont
 
@@ -53,7 +53,7 @@ class ToolLogger:
             date_str = datetime.now().strftime("%Y%m%d")
             self._log_path = LOGS_DIR / f"{tool_name}_{date_str}.log"
         # 连接信号到GUI更新（跨线程安全）
-        self._get_emitter().log_message.connect(self._append_to_widget, Signal.ConnectionType.QueuedConnection)
+        self._get_emitter().log_message.connect(self._append_to_widget, QtCoreQt.ConnectionType.QueuedConnection)
 
     def _write(self, level: LogLevel, msg: str):
         """"""

@@ -47,13 +47,13 @@ class Project:
                 loaded = json.load(f)
                 self.data.update(loaded)
         except (json.JSONDecodeError, IOError) as e:
-            raise ValueError(f": {e}")
+            raise ValueError(f"项目文件损坏: {e}")
 
     def save(self, path: Path = None):
         """JSON"""
         save_path = path or self.path
         if not save_path:
-            raise ValueError("")
+            raise ValueError("未指定保存路径")
         save_path.parent.mkdir(parents=True, exist_ok=True)
         self.data["modified_at"] = datetime.now().isoformat()
         with open(save_path, "w", encoding="utf-8") as f:

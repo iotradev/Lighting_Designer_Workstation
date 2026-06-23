@@ -162,11 +162,9 @@ class PowerCalculatorWindow(BaseToolWindow):
         if is_three_phase:
             # 三相: I = P / (√3 × V × PF)
             current = total_watts / (1.732 * voltage * pf) if (voltage * pf) > 0 else 0
-            current_display = current
         else:
             # 单相: I = P / (V × PF)
             current = total_watts / (voltage * pf) if (voltage * pf) > 0 else 0
-            current_display = current
 
         # 80% 规则: 建议容量 = 总功率 / 0.8
         safety_capacity = total_watts / 0.8
@@ -183,7 +181,7 @@ class PowerCalculatorWindow(BaseToolWindow):
         self.result_labels['建议额定容量:'].setText(f'{safety_capacity/1000:.2f} kVA')
 
         self.logger.info(f'计算完成: 总功率 {total_watts:.0f}W, 视在 {apparent_power:.0f}VA, '
-                         f'电流 {current_display:.2f}A')
+                         f'电流 {current:.2f}A')
 
 
 if __name__ == '__main__':

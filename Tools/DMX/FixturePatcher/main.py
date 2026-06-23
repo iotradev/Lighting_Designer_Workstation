@@ -6,7 +6,6 @@
 import sys
 import json
 import csv
-import random
 from pathlib import Path
 
 from PySide6.QtWidgets import (
