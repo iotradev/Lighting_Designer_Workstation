@@ -452,10 +452,12 @@ class StagePlotDesigner(BaseToolWindow):
             kwargs["x"] = center.x() - 400
             kwargs["y"] = center.y() - 200
         elif etype == "truss":
-            kwargs["x1"] = center.x() - 300
-            kwargs["y1"] = center.y()
-            kwargs["x2"] = center.x() + 300
-            kwargs["y2"] = center.y()
+            kwargs = {
+                "x1": center.x() - 300,
+                "y1": center.y(),
+                "x2": center.x() + 300,
+                "y2": center.y(),
+            }
         elif etype == "audience":
             kwargs["width"] = 800
             kwargs["height"] = 200
@@ -467,10 +469,12 @@ class StagePlotDesigner(BaseToolWindow):
             kwargs["x"] = center.x() - 450
             kwargs["y"] = center.y() - 200
         elif etype == "line":
-            kwargs["x1"] = 0
-            kwargs["y1"] = 0
-            kwargs["x2"] = 200
-            kwargs["y2"] = 0
+            kwargs = {
+                "x1": 0,
+                "y1": 0,
+                "x2": 200,
+                "y2": 0,
+            }
 
         elem = create_element(etype, **kwargs)
 
