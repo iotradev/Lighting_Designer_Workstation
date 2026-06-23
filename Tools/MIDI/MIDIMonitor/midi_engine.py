@@ -53,6 +53,7 @@ class MIDIEngine:
         self._stub_thread: Optional[threading.Thread] = None
         self._current_device = None
         self._virtual_mode = False
+        self._stats_lock = threading.Lock()
 
         # 统计信息
         self.msg_count = 0
@@ -217,13 +218,23 @@ class MIDIEngine:
     # 统计
     # ------------------------------------------------------------------
     def _update_stats(self, msg: MIDIMessage):
-        self.msg_count += 1
-        self.msg_type_counts[msg.msg_type_name] = \
-            self.msg_type_counts.get(msg.msg_type_name, 0) + 1
+        with self._stats_lock:
+            self.msg_count += 1
+            self.msg_type_counts[msg.msg_type_name] = \
+                self.msg_type_counts.get(msg.msg_type_name, 0) + 1
 
-        if msg.msg_type == 0x90 and msg.data2 > 0:
-            self.active_notes[(msg.channel, msg.data1)] = msg.data2
-        elif msg.msg_type == 0x80 or (msg.msg_type == 0x90 and msg.data2 == 0):
-            self.active_notes.pop((msg.channel, msg.data1), None)
-        elif msg.msg_type == 0xB0:
-            self.cc_values[(msg.channel, msg.data1)] = msg.data2
+            if msg.msg_type == 0x90 and msg.data2 > 0:
+                self.active_notes[(msg.channel, msg.data1)] = msg.data2
+            elif msg.msg_type == 0x80 or (msg.msg_type == 0x90 and msg.data2 == 0):
+                self.active_notes.pop((msg.channel, msg.data1), None)
+            elif msg.msg_type == 0xB0:
+                self.cc_values[(msg.channel, msg.data1)] = msg.data2
+
+    def get_stats_snapshot(self):
+        with self._stats_lock:
+            return {
+                'msg_count': self.msg_count,
+                'active_notes': dict(self.active_notes),
+                'cc_values': dict(self.cc_values),
+                'msg_type_counts': dict(self.msg_type_counts),
+            }

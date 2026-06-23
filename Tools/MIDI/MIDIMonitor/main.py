@@ -391,15 +391,16 @@ class MIDIMonitorWindow(BaseToolWindow):
             self._add_table_row(msg)
             self._rate_counter += 1
 
-        # 更新统计
-        self.lbl_total.setText(f"总消息数: {self._engine.msg_count}")
-        self.lbl_active.setText(f"活动音符: {len(self._engine.active_notes)}")
-        self.notes_panel.update_notes(self._engine.active_notes)
-        self.cc_panel.update_cc(self._engine.cc_values)
+        # 更新统计（通过快照避免数据竞争）
+        stats = self._engine.get_stats_snapshot()
+        self.lbl_total.setText(f"总消息数: {stats['msg_count']}")
+        self.lbl_active.setText(f"活动音符: {len(stats['active_notes'])}")
+        self.notes_panel.update_notes(stats['active_notes'])
+        self.cc_panel.update_cc(stats['cc_values'])
 
         # 类型统计
         parts = []
-        for name, cnt in self._engine.msg_type_counts.items():
+        for name, cnt in stats['msg_type_counts'].items():
             parts.append(f"{name}: {cnt}")
         self.lbl_type_stats.setText("\n".join(parts) if parts else "")
 
