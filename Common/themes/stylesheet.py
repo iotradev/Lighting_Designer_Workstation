@@ -306,16 +306,21 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
 QGroupBox {{
     border: 1px solid {c['border']};
     border-radius: {r['md']}px;
-    margin-top: 12px;
-    padding-top: 14px;
+    margin-top: 22px;
+    padding-top: 18px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
     font-weight: bold;
     color: {c['accent']};
 }}
 QGroupBox::title {{
     subcontrol-origin: margin;
-    left: 12px;
-    padding: 0 8px;
+    subcontrol-position: top left;
+    left: 10px;
+    padding: 3px 10px;
     color: {c['accent']};
+    background-color: {c['background']};
 }}
 
 /* 进度条 */
