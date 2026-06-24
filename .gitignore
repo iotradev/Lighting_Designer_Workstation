@@ -21,9 +21,21 @@ env/
 .vscode/
 .idea/
 *.swp
+*.swo
+*~
 
 # Logs
 Logs/*.log
+
+# User data (auto-generated at runtime)
+Config/settings.json
+Config/launcher_config.json
+
+# Projects & Backups (user data)
+Projects/*
+!Projects/.keep
+Backups/*
+!Backups/.keep
 
 # Releases
 Releases/
@@ -31,7 +43,9 @@ Releases/
 # Temp
 *.tmp
 *.bak
+debug.txt
 Thumbs.db
+desktop.ini
 
 # Installer binaries
 python-installer.exe

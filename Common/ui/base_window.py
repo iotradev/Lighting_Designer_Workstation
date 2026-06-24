@@ -120,6 +120,12 @@ class BaseToolWindow(QMainWindow):
             interval = self.config.get("auto_save_interval", 300) * 1000
             self._auto_save_timer.start(interval)
 
+        if self.config.get("auto_backup", True):
+            self._backup_timer = QTimer(self)
+            self._backup_timer.timeout.connect(self._auto_backup)
+            backup_interval = self.config.get("backup_interval", 3600) * 1000
+            self._backup_timer.start(backup_interval)
+
         self._layout_timer = QTimer(self)
         self._layout_timer.timeout.connect(self._save_geometry)
         self._layout_timer.start(60000)
@@ -145,9 +151,6 @@ class BaseToolWindow(QMainWindow):
 
         # 编辑菜单
         edit_menu = menubar.addMenu("编辑(&E)")
-        self._add_action(edit_menu, "撤销", self._stub("Undo"), QKeySequence.StandardKey.Undo, enabled=False)
-        self._add_action(edit_menu, "重做", self._stub("Redo"), QKeySequence.StandardKey.Redo, enabled=False)
-        edit_menu.addSeparator()
         self._add_action(edit_menu, "剪切", self._stub("Cut"), QKeySequence.StandardKey.Cut, enabled=False)
         self._add_action(edit_menu, "复制", self._stub("Copy"), QKeySequence.StandardKey.Copy, enabled=False)
         self._add_action(edit_menu, "粘贴", self._stub("Paste"), QKeySequence.StandardKey.Paste, enabled=False)
@@ -332,6 +335,12 @@ class BaseToolWindow(QMainWindow):
         if self.project_mgr.current_project:
             self.project_mgr.save_project()
             self.logger.debug("自动保存已触发")
+
+    def _auto_backup(self):
+        """自动备份"""
+        if self.project_mgr.current_project:
+            self.project_mgr.backup_project()
+            self.logger.debug("自动备份已触发")
 
     def _save_geometry(self):
         """保存窗口位置"""

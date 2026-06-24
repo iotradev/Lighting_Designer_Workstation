@@ -19,7 +19,7 @@ python -c "import PySide6" >nul 2>&1
 if errorlevel 1 (
     echo.
     echo  [提示] 首次运行，正在安装依赖...
-    pip install PySide6 numpy --quiet
+    pip install -r requirements.txt --quiet
     echo.
 )
 

@@ -7,8 +7,13 @@ import sys
 from pathlib import Path
 
 # 添加公共库路径
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / 'Common'))
-
+try:
+    import path_setup
+except ImportError:
+    import importlib.util as _ilu
+    _spec = _ilu.spec_from_file_location('path_setup', str(Path(__file__).resolve().parent.parent.parent.parent / 'path_setup.py'))
+    _mod = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_mod); import sys; sys.modules['path_setup'] = _mod; path_setup = _mod
+path_setup.ensure_common_path(__file__)
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QLabel, QComboBox,
     QPushButton, QSlider, QLineEdit, QTextEdit, QSpinBox, QGroupBox,

@@ -7,8 +7,13 @@ import sys
 from pathlib import Path
 
 # 添加Common库路径
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / 'Common'))
-
+try:
+    import path_setup
+except ImportError:
+    import importlib.util as _ilu
+    _spec = _ilu.spec_from_file_location('path_setup', str(Path(__file__).resolve().parent.parent.parent.parent / 'path_setup.py'))
+    _mod = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_mod); import sys; sys.modules['path_setup'] = _mod; path_setup = _mod
+path_setup.ensure_common_path(__file__)
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog,
     QCheckBox, QGroupBox, QGridLayout, QSplitter, QSizePolicy, QSpinBox,
@@ -303,6 +308,9 @@ class BPMAnalyzerWindow(BaseToolWindow):
         self.engine = BPMEngine()
         self.current_file = None
         self.realtime_mode = False
+        self._load_worker = None
+        self._analyze_worker = None
+        self._curve_worker = None
         self.realtime_timer = QTimer(self)
         self.realtime_timer.timeout.connect(self._realtime_tick)
         
@@ -598,31 +606,6 @@ class BPMAnalyzerWindow(BaseToolWindow):
         super().closeEvent(event)
 
 
-def main():
-    """应用入口"""
-    from PySide6.QtWidgets import QApplication
-    
-    app = QApplication(sys.argv)
-    app.setApplicationName("BPM分析器")
-    app.setOrganizationName("LightingDesignerWorkstation")
-    
-    window = BPMAnalyzerWindow()
-    window.show()
-    
-    sys.exit(app.exec())
-
-
 if __name__ == '__main__':
-    import traceback
-    try:
-
-        main()
-    except Exception as _e:
-        traceback.print_exc()
-        try:
-            from PySide6.QtWidgets import QApplication, QMessageBox
-            _app = QApplication.instance() or QApplication([])
-            QMessageBox.critical(None, "BPMAnalyzer - 启动错误",
-                f"{type(_e).__name__}: {_e}\n\n请检查日志文件。")
-        except Exception:
-            pass
+    from launcher_utils import run_tool
+    run_tool(BPMAnalyzerWindow, "BPMAnalyzer")

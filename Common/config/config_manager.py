@@ -65,22 +65,24 @@ class ConfigManager:
     def get(self, key, default=None):
         """"""
         keys = key.split(".")
-        val = self._data
-        for k in keys:
-            if isinstance(val, dict) and k in val:
-                val = val[k]
-            else:
-                return default
+        with self._lock:
+            val = self._data
+            for k in keys:
+                if isinstance(val, dict) and k in val:
+                    val = val[k]
+                else:
+                    return default
         return val
 
     def set(self, key, value):
         keys = key.split(".")
-        d = self._data
-        for k in keys[:-1]:
-            if k not in d or not isinstance(d[k], dict):
-                d[k] = {}
-            d = d[k]
-        d[keys[-1]] = value
+        with self._lock:
+            d = self._data
+            for k in keys[:-1]:
+                if k not in d or not isinstance(d[k], dict):
+                    d[k] = {}
+                d = d[k]
+            d[keys[-1]] = value
         self.save()
 
     def save(self):
@@ -97,12 +99,13 @@ class ConfigManager:
 
     def add_recent_project(self, path):
         """"""
-        recent = self._data.get("recent_projects", [])
-        path_str = str(path)
-        if path_str in recent:
-            recent.remove(path_str)
-        recent.insert(0, path_str)
-        self._data["recent_projects"] = recent[:self._data.get("max_recent", 20)]
+        with self._lock:
+            recent = self._data.get("recent_projects", [])
+            path_str = str(path)
+            if path_str in recent:
+                recent.remove(path_str)
+            recent.insert(0, path_str)
+            self._data["recent_projects"] = recent[:self._data.get("max_recent", 20)]
         self.save()
 
     def get_recent_projects(self):
@@ -111,13 +114,15 @@ class ConfigManager:
 
     def save_window_layout(self, name, geometry_hex):
         """"""
-        layouts = self._data.get("window_layouts", {})
-        layouts[name] = {"geometry": geometry_hex, "saved_at": datetime.now().isoformat()}
-        self._data["window_layouts"] = layouts
+        with self._lock:
+            layouts = self._data.get("window_layouts", {})
+            layouts[name] = {"geometry": geometry_hex, "saved_at": datetime.now().isoformat()}
+            self._data["window_layouts"] = layouts
         self.save()
 
     def load_window_layout(self, name):
         """"""
-        layouts = self._data.get("window_layouts", {})
-        layout = layouts.get(name)
-        return layout.get("geometry") if layout else None
+        with self._lock:
+            layouts = self._data.get("window_layouts", {})
+            layout = layouts.get(name)
+            return layout.get("geometry") if layout else None

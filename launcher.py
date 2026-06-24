@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
     QLineEdit, QMessageBox, QSizePolicy
 )
 from PySide6.QtCore import (
-    Qt, QTimer
+    Qt, QTimer, Signal
 )
 from PySide6.QtGui import (
     QFont, QColor, QPainter, QPalette,
@@ -353,9 +353,10 @@ class ToolButton(QPushButton):
         """)
 
 
+
 class CategoryCard(QFrame):
     """分类卡片"""
-    tool_launched = None
+    tool_launched = Signal(str, str)
 
     def __init__(self, category, parent=None):
         super().__init__(parent)
@@ -414,9 +415,6 @@ class CategoryCard(QFrame):
             if self.tool_launched:
                 self.tool_launched.emit(folder, exe)
 
-
-from PySide6.QtCore import Signal as _Signal
-CategoryCard.tool_launched = _Signal(str, str)
 
 
 class LauncherWindow(QMainWindow):
@@ -820,7 +818,7 @@ def main():
     _log_path = BASE_DIR / "Logs" / "launcher_error.log"
     _log_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Qt6 ??????DPI?????????
+    # Qt6 高DPI适配
     try:
         import ctypes
         ctypes.windll.shcore.SetProcessDpiAwarenessContext(-4)  # PER_MONITOR_AWARE_V2

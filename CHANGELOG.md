@@ -1,5 +1,27 @@
 # Changelog
 
+## v2.1.0 (2026-06-24)
+
+### Bug 修复
+- **BPM分析器**: 修复 `_load_worker` / `_analyze_worker` / `_curve_worker` 未初始化导致首次使用崩溃
+- **启动器**: 修复 Signal 在类外赋值，移至 CategoryCard 类体内声明
+- **启动器**: 修复损坏的中文注释 (编码问题 `??????` → `高DPI适配`)
+- **启动器**: 统一 BPMAnalyzer 的 `__main__` 入口为 `launcher_utils.run_tool` 模式
+
+### 架构改进
+- **path_setup.py**: 重写为统一的 `ensure_common_path()` 工具，42 个工具共用
+- **42 个工具**: 消除重复的 `sys.path.insert(Path(...).parent.parent.parent.parent / 'Common')` 模板
+- **ConfigManager**: 所有读写操作加 `_lock` 保护，修复多线程数据竞争
+- **BaseToolWindow**: 移除未实现的撤销/重做菜单 stub；新增自动备份定时器
+- **Common/__init__.py**: 添加去重守卫，避免 sys.path 重复插入
+
+### 部署修复
+- **启动工作站.bat**: 依赖安装从 `pip install PySide6 numpy` 改为 `pip install -r requirements.txt`
+- **启动工作站.vbs**: 窗口改为可见 (style=1)，错误时暂停显示而非静默失败
+
+### 项目清理
+- 删除死代码 `path_setup.py`（已重写为实用工具）
+
 ## v2.0.0 (2026-06-23)
 
 ### 启动器 (launcher.py)
