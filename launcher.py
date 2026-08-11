@@ -346,10 +346,12 @@ class ToolButton(QPushButton):
                 text-align: left;
             }}
             QPushButton:hover {{
-                background: #333;
+                background: {color}18;
                 color: #fff;
-                border-left: 3px solid {color}88;
+                border: 1px solid {color}55;
+                border-left: 3px solid {color};
             }}
+            QPushButton:focus {{ border: 1px solid {color}; border-left: 3px solid {color}; }}
         """)
 
 
@@ -369,6 +371,12 @@ class CategoryCard(QFrame):
                     stop:0 #252528, stop:1 #1e1e21);
                 border: 1px solid #333;
                 border-radius: 8px;
+                border-top: 3px solid {self.color};
+            }}
+            QFrame#catcard:hover {{
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2b2b30, stop:1 #202024);
+                border: 1px solid {self.color}66;
                 border-top: 3px solid {self.color};
             }}
         """)
@@ -440,7 +448,7 @@ class LauncherWindow(QMainWindow):
                 self.all_tools[exe] = {"name": name, "exe": exe, "desc": desc, "folder": folder, "color": cat["color"]}
 
         self.setStyleSheet("""
-            QMainWindow { background: #18181b; }
+            QMainWindow { background: #17171a; }
             QScrollArea { background: transparent; border: none; }
             QScrollBar:vertical { background: #18181b; width: 8px; }
             QScrollBar::handle:vertical { background: #333; border-radius: 4px; min-height: 30px; }
@@ -559,6 +567,32 @@ class LauncherWindow(QMainWindow):
         rb_layout.addStretch()
         right.addWidget(self.recent_bar)
 
+        # 内容标题：在筛选与浏览之间提供稳定的视觉锚点。
+        overview = QFrame()
+        overview.setObjectName("overview")
+        overview.setStyleSheet("""
+            QFrame#overview {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #202026, stop:1 #1b1b20);
+                border-bottom: 1px solid #2f2f36;
+            }
+        """)
+        overview_layout = QHBoxLayout(overview)
+        overview_layout.setContentsMargins(16, 10, 16, 10)
+        overview_layout.setSpacing(10)
+        overview_title = QLabel("工作区")
+        overview_title.setStyleSheet("color: #f4f4f5; font-size: 18px; font-weight: 700; background: transparent;")
+        overview_layout.addWidget(overview_title)
+        overview_subtitle = QLabel(f"{len(CATEGORIES)} 个分类 · {len(self.all_tools)} 个专业工具")
+        overview_subtitle.setStyleSheet("color: #8c8c96; font-size: 12px; background: transparent;")
+        overview_layout.addWidget(overview_subtitle)
+        overview_layout.addStretch()
+        ready = QLabel("● 系统就绪")
+        ready.setStyleSheet("color: #4ec9b0; font-size: 12px; font-weight: 600; background: transparent;")
+        ready.setToolTip("启动器已就绪，可直接打开工具")
+        overview_layout.addWidget(ready)
+        right.addWidget(overview)
+
         # 分类卡片网格
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -596,11 +630,14 @@ class LauncherWindow(QMainWindow):
         fl.addStretch()
         if PYTHON_EXE:
             py_name = Path(PYTHON_EXE).name
-            py_status = QLabel(f"Python: {py_name}")
+            py_status = QLabel(f"运行时：{py_name}")
             py_status.setStyleSheet("color: #4ec9b0; font-size: 11px; background: transparent;")
+            if getattr(sys, "frozen", False):
+                py_status.setToolTip("发布版通过此 Python 运行独立工具；请确保已安装项目依赖。")
         else:
-            py_status = QLabel("⚠ 未安装Python")
+            py_status = QLabel("⚠ 未找到 Python")
             py_status.setStyleSheet("color: #ff6b6b; font-size: 11px; background: transparent;")
+            py_status.setToolTip("请安装 Python 3.10+ 后再启动工具。")
         fl.addWidget(py_status)
         fl.addSpacing(12)
         hint = QLabel("Ctrl+K 搜索 · Ctrl+B 侧栏 · Ctrl+Q 退出")

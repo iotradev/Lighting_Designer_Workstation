@@ -25,3 +25,4 @@ Write-Host "[4/4] 安装依赖" -ForegroundColor Cyan
 & $venvPython -m pip install -r requirements.txt
 
 Write-Host "完成。运行: .\.venv\Scripts\python.exe launcher.py" -ForegroundColor Green
+Write-Host "测试: .\.venv\Scripts\python.exe -m pytest tests/ -v" -ForegroundColor Green

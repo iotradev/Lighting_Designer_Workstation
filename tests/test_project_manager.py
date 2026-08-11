@@ -80,6 +80,14 @@ class TestProjectManager:
         assert proj.path.exists()
         assert pm.current_project is proj
 
+    def test_new_project_rejects_duplicate_name(self, tmp_path, monkeypatch):
+        monkeypatch.setattr("Common.project.project_manager.PROJECTS_DIR", tmp_path / "Projects")
+        monkeypatch.setattr("Common.project.project_manager.BACKUPS_DIR", tmp_path / "Backups")
+        pm = ProjectManager()
+        pm.new_project("My Show")
+        with pytest.raises(FileExistsError):
+            pm.new_project("My Show")
+
     def test_open_project(self, tmp_path, monkeypatch):
         monkeypatch.setattr("Common.project.project_manager.PROJECTS_DIR", tmp_path / "Projects")
         monkeypatch.setattr("Common.project.project_manager.BACKUPS_DIR", tmp_path / "Backups")
@@ -140,3 +148,15 @@ class TestProjectManager:
         names = [p["name"] for p in projects]
         assert "Show A" in names
         assert "Show B" in names
+
+    def test_backups_are_isolated_by_project(self, tmp_path, monkeypatch):
+        monkeypatch.setattr("Common.project.project_manager.PROJECTS_DIR", tmp_path / "Projects")
+        monkeypatch.setattr("Common.project.project_manager.BACKUPS_DIR", tmp_path / "Backups")
+        pm = ProjectManager()
+        pm.new_project("Show")
+        pm.backup_project()
+        pm.current_project = pm.new_project("Show_2")
+        pm.backup_project()
+        pm._cleanup_backups("Show", max_backups=0)
+        assert not (tmp_path / "Backups" / "Show").exists() or not list((tmp_path / "Backups" / "Show").iterdir())
+        assert list((tmp_path / "Backups" / "Show_2").iterdir())

@@ -112,11 +112,11 @@ def timestamp():
 
 
 def safe_filename(name):
-    """"""
+    """生成可用于 Windows 文件和目录名的安全名称。"""
     invalid = '<>:"/\\|?*'
     for c in invalid:
         name = name.replace(c, "_")
-    name = name.strip()
+    name = name.strip().rstrip(". ")
     reserved = {'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4',
                 'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2',
                 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'}

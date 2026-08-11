@@ -101,6 +101,9 @@ class TestSafeFilename:
     def test_strips_whitespace(self):
         assert safe_filename("  hello  ") == "hello"
 
+    def test_strips_windows_trailing_characters(self):
+        assert safe_filename("项目. ") == "项目"
+
 
 class TestFileIO:
     def test_save_and_load_json(self, tmp_path):

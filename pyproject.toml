@@ -16,5 +16,13 @@ dependencies = [
   "python-rtmidi>=1.5,<2"
 ]
 
+[project.optional-dependencies]
+dev = [
+  "pytest>=8,<10",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 [project.urls]
 Homepage = "https://github.com/lighting-designer/workstation"
